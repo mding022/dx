@@ -1,5 +1,6 @@
 import sqlite3
 import tempfile
+from contextlib import closing
 from pathlib import Path
 import unittest
 
@@ -72,7 +73,7 @@ class CaseGeneratorTests(unittest.TestCase):
             restarted = CaseGenerator(client=second_client, cache_database=cache)
             self.assertEqual(restarted.generate(5), first)
             self.assertEqual(second_client.models.calls, 0)
-            with sqlite3.connect(cache) as db:
+            with closing(sqlite3.connect(cache)) as db:
                 self.assertEqual(db.execute("SELECT COUNT(*) FROM cases").fetchone()[0], 1)
 
     def test_invalid_association_rank_is_not_cached(self):
@@ -81,7 +82,7 @@ class CaseGeneratorTests(unittest.TestCase):
             generator = CaseGenerator(client=FakeClient(rank=999), cache_database=cache)
             with self.assertRaisesRegex(RuntimeError, "invalid symptom ranks"):
                 generator.generate(5)
-            with sqlite3.connect(cache) as db:
+            with closing(sqlite3.connect(cache)) as db:
                 self.assertEqual(db.execute("SELECT COUNT(*) FROM cases").fetchone()[0], 0)
 
     def test_new_simulations_reuse_symptoms_with_different_patients(self):
@@ -102,7 +103,7 @@ class CaseGeneratorTests(unittest.TestCase):
             self.assertNotEqual(first["patient"]["background"], second["patient"]["background"])
             self.assertEqual(set(first), set(second))
             self.assertEqual(set(first["patient"]), set(second["patient"]))
-            with sqlite3.connect(cache) as db:
+            with closing(sqlite3.connect(cache)) as db:
                 self.assertEqual(db.execute("SELECT COUNT(*) FROM cases").fetchone()[0], 1)
                 self.assertEqual(db.execute("SELECT COUNT(*) FROM persona_state").fetchone()[0], 1)
 

@@ -15,6 +15,10 @@ PATIENT_PROFILE_FIELDS = (
     "name", "age", "pronouns", "occupation", "background",
     "medical_history", "medications", "allergies",
 )
+PATIENT_CONVERSATION_FIELDS = PATIENT_PROFILE_FIELDS + (
+    "chief_complaint", "opening_line", "symptom_timeline",
+    "pertinent_negatives", "details_to_reveal_if_asked",
+)
 
 
 class SimulationRepository:
@@ -85,6 +89,23 @@ class SimulationRepository:
         if row is None:
             return None
         return self._view(row, disease_lookup(row["diagnosis_id"]) if row["diagnosis_id"] else None, disease_details)
+
+    def get_patient_for_conversation(self, user_id, simulation_id):
+        """Load the saved patient for an active, account-owned interview."""
+        with closing(self._connect()) as db:
+            row = db.execute(
+                "SELECT case_json FROM simulations WHERE user_id=? AND id=? AND status='awaiting_diagnosis'",
+                (user_id, simulation_id),
+            ).fetchone()
+        if row is None:
+            return None
+        patient = json.loads(row["case_json"])["patient"]
+        context = {key: patient[key] for key in PATIENT_CONVERSATION_FIELDS}
+        context["symptoms"] = [
+            {key: symptom[key] for key in ("name", "patient_description", "onset", "severity")}
+            for symptom in patient["symptoms"]
+        ]
+        return {"patient": context}
 
     def complete(self, user_id, simulation_id, diagnosis_id, disease_lookup, disease_details=None):
         completed_at = datetime.now(timezone.utc).isoformat()

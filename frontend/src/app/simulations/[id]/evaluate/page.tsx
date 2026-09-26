@@ -2,9 +2,9 @@ import Link from "next/link";
 import { ArrowLeft, BadgeCheck, BriefcaseBusiness, CalendarDays, ClipboardList, Heart, Pill, ShieldCheck, UserRound } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { auth0 } from "@/lib/auth0";
-import { BackendError, getDiseases, getSimulation, type Disease, type Simulation } from "@/lib/backend";
+import { BackendError, getConversationPatient, getDiseases, getSimulation, type ConversationPatient, type Disease, type Simulation } from "@/lib/backend";
 import { AppShell } from "@/components/AppShell";
-import { CallStatus } from "@/components/CallStatus";
+import { PatientConversationWidget } from "@/components/PatientConversationWidget";
 import { DiagnosisForm } from "@/components/DiagnosisForm";
 import { PatientIllustration } from "@/components/PatientIllustration";
 import { ReviewCard } from "@/components/ReviewCard";
@@ -38,11 +38,18 @@ export default async function EvaluationPage({ params }: PageProps<"/simulations
     </AppShell>;
   }
 
+  const agentId = process.env.ELEVENLABS_AGENT_ID?.trim() ?? "";
+  let conversationPatient: ConversationPatient | null = null;
+  if (agentId) {
+    try { conversationPatient = await getConversationPatient(session.user.sub, id); }
+    catch (error) { console.error("Patient interview unavailable", error); }
+  }
+
   return <AppShell name={session.user.name ?? session.user.email ?? "Student"} email={session.user.email} active="simulation">
     <Link href="/dashboard" className="back-link"><ArrowLeft size={16} /> Back to dashboard</Link>
     <div className="evaluation-header"><div><span className="section-overline">CLINICAL SIMULATION · {simulation.id.slice(0, 8).toUpperCase()}</span><h1>Make your assessment<span className="heading-period">.</span></h1><p>Review your patient, then choose the diagnosis that fits best.</p></div><span className="status-pill pending">Awaiting diagnosis</span></div>
-    <div className="steps"><div className="step done"><span><BadgeCheck size={16} /></span> Call started</div><div className="step-line" /><div className="step current"><span>2</span> Evaluation</div><div className="step-line" /><div className="step"><span>3</span> Review</div></div>
-    <CallStatus patientName={patient.name} />
+    <div className="steps"><div className="step done"><span><BadgeCheck size={16} /></span> Case prepared</div><div className="step-line" /><div className="step current"><span>2</span> Interview &amp; evaluation</div><div className="step-line" /><div className="step"><span>3</span> Review</div></div>
+    <PatientConversationWidget key={simulation.id} agentId={agentId} patientName={patient.name} patient={conversationPatient} />
     <div className="evaluation-grid">
       <section className="patient-card">
         <div className="patient-card-top"><div><span className="card-eyebrow">PATIENT PROFILE</span><h2>{patient.name}</h2><p>{patient.age} years old <span>·</span> {patient.pronouns}</p></div><span className="id-chip"><ShieldCheck size={15} /> DX PATIENT</span></div>

@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ArrowUpRight, LoaderCircle } from "lucide-react";
-import type { GeneratedCase } from "@/lib/backend";
 
 export function StartSimulationButton({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
@@ -16,10 +15,8 @@ export function StartSimulationButton({ compact = false }: { compact?: boolean }
     setError("");
     try {
       const response = await fetch("/api/simulations/start", { method: "POST" });
-      const data = await response.json() as { simulation_id?: string; case?: GeneratedCase; error?: string };
-      if (!response.ok || !data.simulation_id || !data.case) throw new Error(data.error || "Could not start the simulation.");
-      // ElevenLabs handoff goes here. This is the full, fixed case JSON for the future agent.
-      console.log("[dx] simulation case for ElevenLabs", data.case);
+      const data = await response.json() as { simulation_id?: string; error?: string };
+      if (!response.ok || !data.simulation_id) throw new Error(data.error || "Could not start the simulation.");
       router.push(`/simulations/${data.simulation_id}/evaluate`);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Could not start the simulation.");

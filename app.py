@@ -300,6 +300,7 @@ class Handler(BaseHTTPRequestHandler):
         simulation_paths = {
             "/api/simulations/start", "/api/simulations/list",
             "/api/simulations/get", "/api/simulations/complete",
+            "/api/simulations/conversation",
         }
         if self.path != "/api/generate" and self.path not in simulation_paths:
             return self._json(404, {"error": "Not found."})
@@ -332,6 +333,8 @@ class Handler(BaseHTTPRequestHandler):
                         raise ValueError("Invalid simulation ID.")
                     if self.path == "/api/simulations/get":
                         result = SIMULATIONS.get_for_user(user_id, simulation_id, disease_name, APP.repo.get_disease)
+                    elif self.path == "/api/simulations/conversation":
+                        result = SIMULATIONS.get_patient_for_conversation(user_id, simulation_id)
                     else:
                         diagnosis_id = data.get("diagnosis_id")
                         if type(diagnosis_id) is not int or disease_name(diagnosis_id) is None:

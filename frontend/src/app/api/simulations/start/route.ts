@@ -8,7 +8,7 @@ export async function POST() {
     const data = await backendPost<{ simulation_id: string; case: GeneratedCase }>(
       "/api/simulations/start", { user_id: session.user.sub },
     );
-    return Response.json(data, { headers: { "Cache-Control": "no-store" } });
+    return Response.json({ simulation_id: data.simulation_id }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     console.error("Simulation start failed", error);
     return Response.json({ error: "Could not start a simulation. Please try again." }, { status: 502 });

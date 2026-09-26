@@ -6,6 +6,39 @@ from simulation_repository import SimulationRepository
 
 
 class SimulationRepositoryTests(unittest.TestCase):
+    def test_conversation_reuses_saved_patient_without_exposing_diagnosis(self):
+        patient = {
+            "name": "Alex Rivera", "age": 42, "pronouns": "they/them",
+            "occupation": "Teacher", "background": "Lives with family.",
+            "medical_history": [], "medications": [], "allergies": [],
+            "chief_complaint": "A persistent cough.",
+            "opening_line": "I've been coughing for two days.",
+            "symptom_timeline": "The cough began two days ago.",
+            "pertinent_negatives": ["No recent travel."],
+            "details_to_reveal_if_asked": ["Feels worse at night."],
+            "symptoms": [{"association_rank": 1, "name": "cough",
+                          "patient_description": "I keep coughing.",
+                          "onset": "Two days ago", "severity": "Moderate"}],
+        }
+        case = {"case_id": 5, "diagnosis": "pneumonia", "patient": patient}
+        with tempfile.TemporaryDirectory() as directory:
+            repo = SimulationRepository(Path(directory) / "simulations.sqlite3")
+            simulation_id = repo.create("student-one", case)["simulation_id"]
+            self.assertIsNone(repo.get_patient_for_conversation("student-two", simulation_id))
+            self.assertIsNone(repo.get_patient_for_conversation("student-one", "missing"))
+            context = repo.get_patient_for_conversation("student-one", simulation_id)
+            self.assertEqual(context["patient"]["opening_line"], patient["opening_line"])
+            self.assertEqual(context["patient"]["details_to_reveal_if_asked"], patient["details_to_reveal_if_asked"])
+            self.assertEqual(context["patient"]["symptoms"][0]["onset"], "Two days ago")
+            self.assertNotIn("association_rank", context["patient"]["symptoms"][0])
+            self.assertNotIn("diagnosis", context)
+            self.assertNotIn("case_id", context)
+            # A fresh repository instance represents reopening or refreshing the case.
+            self.assertEqual(SimulationRepository(repo.database).get_patient_for_conversation(
+                "student-one", simulation_id), context)
+            repo.complete("student-one", simulation_id, 5, lambda _: "pneumonia")
+            self.assertIsNone(repo.get_patient_for_conversation("student-one", simulation_id))
+
     def test_account_isolation_and_one_time_evaluation(self):
         case = {"case_id": 5, "diagnosis": "pneumonia", "patient": {
             "name": "Alex Rivera", "age": 42, "pronouns": "they/them",

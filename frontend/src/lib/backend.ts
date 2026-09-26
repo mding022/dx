@@ -63,6 +63,10 @@ export type GeneratedCase = {
   };
 };
 
+export type ConversationPatient = Omit<GeneratedCase["patient"], "symptoms"> & {
+  symptoms: Array<Omit<GeneratedCase["patient"]["symptoms"][number], "association_rank">>;
+};
+
 export class BackendError extends Error {
   constructor(message: string, public status: number) {
     super(message);
@@ -99,4 +103,11 @@ export async function listSimulations(userId: string): Promise<Simulation[]> {
 
 export async function getSimulation(userId: string, id: string): Promise<Simulation> {
   return backendPost<Simulation>("/api/simulations/get", { user_id: userId, simulation_id: id });
+}
+
+export async function getConversationPatient(userId: string, id: string): Promise<ConversationPatient> {
+  const data = await backendPost<{ patient: ConversationPatient }>("/api/simulations/conversation", {
+    user_id: userId, simulation_id: id,
+  });
+  return data.patient;
 }
