@@ -6,6 +6,7 @@ import os
 import sqlite3
 import hmac
 import secrets
+import copy
 from contextlib import closing
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -50,9 +51,29 @@ class PatientProfile(BaseModel):
     details_to_reveal_if_asked: list[str] = Field(description="Useful background or symptom details not volunteered immediately")
 
 
+class PatientPersona(BaseModel):
+    occupation: str
+    background: str
+    opening_line: str
+    symptom_timeline: str
+    pertinent_negatives: list[str]
+    details_to_reveal_if_asked: list[str]
+
+
+PERSONA_NAMES = {
+    "she/her": ("Maya Chen", "Leila Haddad", "Sofia Alvarez", "Nina Patel", "Amara Okafor", "Elena Rossi", "Priya Shah", "Grace Kim"),
+    "he/him": ("Daniel Park", "Mateo Rivera", "Omar Hassan", "Noah Bennett", "Ethan Brooks", "Samuel Okoro", "Leo Martin", "Arjun Mehta"),
+    "they/them": ("Jordan Lee", "Alex Morgan", "Avery Quinn", "Riley Chen", "Taylor Brooks", "Morgan Patel", "Casey Rivera", "Jamie Reed"),
+}
+PERSONA_HOBBIES = ("gardening", "cooking", "reading", "painting", "playing board games", "watching films", "photography", "listening to music")
+
+
 SYSTEM_INSTRUCTION = """Create one fictional patient profile for a medical education simulation.
 The input is a disease record and its ranked associated terms from a historical source dataset. The rank is association strength, not symptom probability. The list can contain lab findings, exam signs, tests, and noisy associations; it is not a checklist to copy. Select only a few patient-observable terms that make a medically plausible presentation of the named disease. Every returned symptom must correspond to one input term and have that term's exact association_rank. Favor stronger associations when plausible, but never turn a test or clinical finding into something the patient claims to feel. Use general medical knowledge only to make the fictional story coherent; do not add unranked symptoms, test results, or vital signs. If the disease label is broad or ambiguous, make a conservative presentation and avoid false precision.
 Give the patient a consistent age, background, symptom onset, and progression. Use everyday patient language. Do not reveal the diagnosis in the chief complaint or opening line. Keep all fields concise. Use empty lists when medications, allergies, or history are unknown; do not fabricate clinical certainty. The result is a synthetic case for testing, not medical guidance."""
+
+PERSONA_INSTRUCTION = """Write a fresh fictional patient identity and narrative for an existing medical education case.
+Use the exact supplied name, age, and pronouns. Keep the cached symptoms, symptom onset and severity, medical history, medications, allergies, chief complaint, and clinical course consistent. Return only the requested narrative fields. Rewrite references to home life, work, travel, pets, or exposures coherently: if a cached clue depends on one of them, preserve that fact in the new person's background and follow-up details. Occupation may remain similar when the case requires it. Write the opening line in the patient's own voice and never reveal the diagnosis there. Do not add symptoms, test results, vital signs, or unsupported clinical facts. Keep the narrative concise. This is a synthetic case, not medical guidance."""
 
 
 class CaseGenerator:
@@ -70,7 +91,50 @@ class CaseGenerator:
             schema_version INTEGER NOT NULL,
             case_json TEXT NOT NULL
         )""")
+        db.execute("""CREATE TABLE IF NOT EXISTS persona_state (
+            disease_id INTEGER PRIMARY KEY,
+            last_name TEXT NOT NULL,
+            last_age INTEGER NOT NULL,
+            last_pronouns TEXT NOT NULL
+        )""")
         return db
+
+    def _last_persona(self, disease_id):
+        with closing(self._cache_connection()) as db:
+            return db.execute(
+                "SELECT last_name, last_age, last_pronouns FROM persona_state WHERE disease_id=?",
+                (disease_id,),
+            ).fetchone()
+
+    def _remember_persona(self, disease_id, name, age, pronouns):
+        with closing(self._cache_connection()) as db, db:
+            db.execute("""INSERT INTO persona_state (disease_id, last_name, last_age, last_pronouns)
+                VALUES (?, ?, ?, ?) ON CONFLICT(disease_id) DO UPDATE SET
+                last_name=excluded.last_name, last_age=excluded.last_age,
+                last_pronouns=excluded.last_pronouns""", (disease_id, name, age, pronouns))
+
+    def _choose_identity(self, disease_id, base_patient):
+        last = self._last_persona(disease_id)
+        previous_pronouns = last[2] if last else base_patient["pronouns"]
+        pronouns = secrets.choice([value for value in PERSONA_NAMES if value != previous_pronouns])
+        previous_name = last[0] if last else base_patient["name"]
+        names = [value for value in PERSONA_NAMES[pronouns] if value not in (previous_name, base_patient["name"])]
+        name = secrets.choice(names)
+        base_age = base_patient["age"]
+        low = max(1 if base_age < 18 else 18, base_age - (3 if base_age < 18 else 12))
+        high = min(17 if base_age < 18 else 100, base_age + (3 if base_age < 18 else 12))
+        previous_age = last[1] if last else base_age
+        ages = [age for age in range(low, high + 1) if age not in (previous_age, base_age)]
+        age = secrets.choice(ages or [base_age])
+        return name, age, pronouns
+
+    def _client(self):
+        if self.client is None:
+            key = os.getenv("GEMINI_API_KEY")
+            if not key:
+                raise RuntimeError("Add GEMINI_API_KEY to .env and restart the server.")
+            self.client = genai.Client(api_key=key)
+        return self.client
 
     def _cached_case(self, disease_id):
         with closing(self._cache_connection()) as db:
@@ -106,18 +170,12 @@ class CaseGenerator:
         cached = self._cached_case(disease_id)
         if cached is not None:
             return cached
-        if self.client is None:
-            key = os.getenv("GEMINI_API_KEY")
-            if not key:
-                raise RuntimeError("Add GEMINI_API_KEY to .env and restart the server.")
-            self.client = genai.Client(api_key=key)
-
         ranked_terms = [
             {"rank": symptom["rank"], "name": symptom["name"]}
             for symptom in disease["symptoms"]
         ]
         prompt_data = {"disease": disease["name"], "ranked_associated_terms": ranked_terms}
-        response = self.client.models.generate_content(
+        response = self._client().models.generate_content(
             model=self.model,
             contents=json.dumps(prompt_data, ensure_ascii=False),
             config=types.GenerateContentConfig(
@@ -146,6 +204,62 @@ class CaseGenerator:
             "patient": patient.model_dump(),
         }
         return self._save_case(disease_id, case)
+
+    def generate_personalized(self, disease_id):
+        """Reuse cached clinical clues with a fresh patient for each encounter."""
+        base_case = self.generate(disease_id)
+        base_patient = base_case["patient"]
+        name, age, pronouns = self._choose_identity(disease_id, base_patient)
+        prompt_data = {
+            "diagnosis": base_case["diagnosis"],
+            "new_identity": {"name": name, "age": age, "pronouns": pronouns},
+            "fixed_clinical_facts": {
+                key: base_patient[key] for key in (
+                    "chief_complaint", "symptoms", "medical_history", "medications", "allergies"
+                )
+            },
+            "cached_narrative": {
+                key: base_patient[key] for key in (
+                    "occupation", "background", "opening_line", "symptom_timeline",
+                    "pertinent_negatives", "details_to_reveal_if_asked"
+                )
+            },
+        }
+        try:
+            response = self._client().models.generate_content(
+                model=self.model,
+                contents=json.dumps(prompt_data, ensure_ascii=False),
+                config=types.GenerateContentConfig(
+                    system_instruction=PERSONA_INSTRUCTION,
+                    response_mime_type="application/json",
+                    response_schema=PatientPersona,
+                    temperature=0.8,
+                ),
+            )
+            parsed = response.parsed
+            persona = parsed if isinstance(parsed, PatientPersona) else PatientPersona.model_validate_json(response.text or "")
+            if not all((persona.occupation.strip(), persona.background.strip(), persona.opening_line.strip(), persona.symptom_timeline.strip())):
+                raise ValueError("Incomplete patient variation")
+            updates = persona.model_dump()
+        except Exception:
+            logging.exception("Patient variation failed; using a local identity variation")
+            pronouns = base_patient["pronouns"]
+            fallback_names = PERSONA_NAMES.get(pronouns, PERSONA_NAMES["they/them"])
+            previous_name = (self._last_persona(disease_id) or (None,))[0]
+            name = secrets.choice([value for value in fallback_names if value not in (base_patient["name"], previous_name)])
+            updates = {
+                "occupation": base_patient["occupation"],
+                "background": f"{base_patient['background']} In free time, enjoys {secrets.choice(PERSONA_HOBBIES)}.",
+                "opening_line": base_patient["opening_line"],
+                "symptom_timeline": base_patient["symptom_timeline"],
+                "pertinent_negatives": base_patient["pertinent_negatives"],
+                "details_to_reveal_if_asked": base_patient["details_to_reveal_if_asked"],
+            }
+        case = copy.deepcopy(base_case)
+        case["patient"].update(updates)
+        case["patient"].update({"name": name, "age": age, "pronouns": pronouns})
+        self._remember_persona(disease_id, name, age, pronouns)
+        return case
 
 
 APP = CaseGenerator()
@@ -202,14 +316,14 @@ class Handler(BaseHTTPRequestHandler):
             if not isinstance(data, dict):
                 raise ValueError("Expected a JSON object.")
             if self.path == "/api/generate":
-                result = APP.generate(data.get("disease_id"))
+                result = APP.generate_personalized(data.get("disease_id"))
             else:
                 user_id = data.get("user_id")
                 if not isinstance(user_id, str) or not 1 <= len(user_id) <= 200:
                     raise ValueError("Invalid account.")
                 if self.path == "/api/simulations/start":
                     case_id = secrets.choice(APP.diseases())["id"]
-                    result = SIMULATIONS.create(user_id, APP.generate(case_id))
+                    result = SIMULATIONS.create(user_id, APP.generate_personalized(case_id))
                 elif self.path == "/api/simulations/list":
                     result = {"simulations": SIMULATIONS.list_for_user(user_id, disease_name)}
                 else:

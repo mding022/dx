@@ -3,7 +3,7 @@ import tempfile
 from pathlib import Path
 import unittest
 
-from app import CaseGenerator, PatientProfile
+from app import CaseGenerator, PatientPersona, PatientProfile
 
 
 class FakeModels:
@@ -14,6 +14,16 @@ class FakeModels:
     def generate_content(self, **kwargs):
         self.calls += 1
         self.config = kwargs["config"]
+        if self.config.response_schema is PatientPersona:
+            persona = PatientPersona(
+                occupation="Teacher",
+                background=f"Lives near family; variation {self.calls}.",
+                opening_line="I've had a cough for a few days.",
+                symptom_timeline="It started three days ago.",
+                pertinent_negatives=[],
+                details_to_reveal_if_asked=["The cough is worse at night."],
+            )
+            return type("Response", (), {"parsed": persona, "text": None})()
         profile = PatientProfile(
             name="Alex Rivera",
             age=42,
@@ -73,6 +83,28 @@ class CaseGeneratorTests(unittest.TestCase):
                 generator.generate(5)
             with sqlite3.connect(cache) as db:
                 self.assertEqual(db.execute("SELECT COUNT(*) FROM cases").fetchone()[0], 0)
+
+    def test_new_simulations_reuse_symptoms_with_different_patients(self):
+        with tempfile.TemporaryDirectory() as directory:
+            cache = Path(directory) / "cases.sqlite3"
+            client = FakeClient()
+            generator = CaseGenerator(client=client, cache_database=cache)
+            first = generator.generate_personalized(5)
+            second = generator.generate_personalized(5)
+            cached = generator.generate(5)
+
+            self.assertEqual(client.models.calls, 3)
+            self.assertEqual(first["patient"]["symptoms"], second["patient"]["symptoms"])
+            self.assertEqual(first["patient"]["symptoms"], cached["patient"]["symptoms"])
+            self.assertNotEqual(first["patient"]["name"], second["patient"]["name"])
+            self.assertNotEqual(first["patient"]["age"], second["patient"]["age"])
+            self.assertNotEqual(first["patient"]["pronouns"], second["patient"]["pronouns"])
+            self.assertNotEqual(first["patient"]["background"], second["patient"]["background"])
+            self.assertEqual(set(first), set(second))
+            self.assertEqual(set(first["patient"]), set(second["patient"]))
+            with sqlite3.connect(cache) as db:
+                self.assertEqual(db.execute("SELECT COUNT(*) FROM cases").fetchone()[0], 1)
+                self.assertEqual(db.execute("SELECT COUNT(*) FROM persona_state").fetchone()[0], 1)
 
 
 if __name__ == "__main__":
