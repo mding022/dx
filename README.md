@@ -1,4 +1,70 @@
-# Illness and symptom repository
+# DX patient case generator
+
+## Student frontend
+
+The Next.js app in [`frontend/`](frontend/) is the student experience: Auth0
+sign-in, a dashboard, random patient simulations, account-specific history, and
+diagnosis evaluation. The evaluation view shows a simulated call indicator, and
+the completed case debrief compares the patient's selected symptoms with linked
+terms for the chosen diagnosis. The Python service supplies the disease catalog and Gemini
+cases. Starting a simulation logs the full case JSON in the browser console as
+the handoff point for the future ElevenLabs conversation. The evaluation screen
+shows identity and background information without revealing symptoms or the
+answer. A submitted diagnosis is saved to `data/simulations.sqlite3` and then
+the answer is shown.
+
+Install the frontend dependencies with `cd frontend && npm install`. Keep the
+Auth0 values and backend token in `frontend/.env.local` (copy
+`frontend/.env.example` if needed). Set the same `DX_BACKEND_TOKEN` in the
+backend `.env`; both environment files are ignored by Git. In separate terminals:
+
+```sh
+PORT=8001 .venv/bin/python app.py
+cd frontend && npm run dev
+```
+
+Open the URL printed by Next.js. Configure your Auth0 **Regular Web Application**
+with Allowed Callback URLs `http://localhost:3000/auth/callback`, Allowed Logout
+URLs `http://localhost:3000`, and Allowed Web Origins `http://localhost:3000`.
+If Next.js uses another port, change `APP_BASE_URL` and those Auth0 URLs to match
+before signing in. For deployment, give the Python service persistent storage for
+the two SQLite files and provide the same private backend token to both services.
+
+The generator-only test page remains available at `http://127.0.0.1:8001`.
+
+The local web app lists all 134 diseases in `data/illnesses.sqlite3`. Select one
+and Gemini creates a structured, fictional patient profile from its ranked
+associated terms. The fixed JSON shape contains the generated patient, the chosen
+diagnosis, and only the selected patient-observable symptoms, each with its
+association rank. It can be copied or downloaded for testing.
+ElevenLabs will handle the conversation later; Gemini is only used here to
+prepare the case data.
+
+## Run the generator
+
+The `.venv` Python environment is set up locally. To set it up again elsewhere:
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+```
+
+Add your hackathon Gemini API key to `.env` (copy `.env.example` if needed).
+The key stays on the local Python server and `.env` is ignored by Git. Then run:
+
+```sh
+.venv/bin/python app.py
+```
+
+Open `http://127.0.0.1:8000`. Search or scroll through the disease list and click
+**Load or generate case**. The first request for a disease calls Gemini and saves
+the exact JSON in `data/generated_cases.sqlite3`; later requests return that same
+case, including after server restarts. Keep this cache file with the project if
+you want teammates to use the same cases. Change `GEMINI_MODEL` in `.env` if your
+key has access to a different model. Review clinical details before using a
+generated case for education. Association ranks are not symptom probabilities.
+
+## Illness and symptom repository
 
 Ready-to-use SQLite database: `data/illnesses.sqlite3`. All backend code is Python.
 SQLite is built into Python, runs locally and needs no database server.
@@ -82,4 +148,4 @@ rank against the Excel source, verify database integrity, search and rebuilding.
 
 The source clone and notebook remain in `upstream/` locally; that folder is
 excluded from Git. The ready-made database is not excluded, so it can be shipped
-with your Flask project. Patient simulation is the next project step.
+with your project.

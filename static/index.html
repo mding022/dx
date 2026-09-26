@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DX · Patient case generator</title>
+  <style>
+    :root { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #233246; background: #f3f6fa; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 24px; }
+    .app { max-width: 1200px; min-height: calc(100vh - 48px); margin: auto; background: white; border: 1px solid #dce4ed; border-radius: 18px; box-shadow: 0 16px 45px #1d355012; overflow: hidden; }
+    header { padding: 24px 28px; border-bottom: 1px solid #e5ebf1; }
+    h1 { margin: 0; color: #153a59; font-size: 27px; letter-spacing: -.05em; }
+    header p { margin: 6px 0 0; color: #607186; font-size: 14px; }
+    .layout { display: grid; grid-template-columns: minmax(240px, 315px) minmax(0, 1fr); min-height: calc(100vh - 150px); }
+    aside { display: flex; flex-direction: column; gap: 12px; padding: 22px; border-right: 1px solid #e5ebf1; }
+    label { font-size: 13px; font-weight: 700; color: #32465a; }
+    input, select, button { font: inherit; }
+    input { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 9px; outline-color: #1769a7; }
+    #count { font-size: 12px; color: #718096; }
+    select { width: 100%; min-height: 370px; flex: 1; padding: 6px; border: 1px solid #cbd5e1; border-radius: 9px; outline-color: #1769a7; background: white; }
+    option { padding: 8px; border-radius: 5px; }
+    button { border: 0; border-radius: 9px; padding: 11px 16px; background: #1769a7; color: white; font-weight: 650; cursor: pointer; }
+    button:hover:not(:disabled) { background: #0f568c; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .secondary { background: #e9f1f8; color: #17547f; }
+    .secondary:hover:not(:disabled) { background: #d9e9f5; }
+    .result { min-width: 0; padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+    .result-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    h2 { margin: 0; font-size: 18px; color: #213a51; }
+    .actions { display: flex; gap: 8px; }
+    .actions button { padding: 8px 12px; font-size: 13px; }
+    #status { margin: 0; color: #65768a; font-size: 13px; }
+    #status.error { color: #a8392d; }
+    pre { flex: 1; min-height: 400px; max-height: calc(100vh - 235px); margin: 0; padding: 20px; overflow: auto; border: 1px solid #dbe4eb; border-radius: 10px; background: #f8fafc; color: #1f3349; font: 12.5px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .note { margin: 0; font-size: 12px; line-height: 1.5; color: #728196; }
+    @media (max-width: 700px) { body { padding: 0; } .app { border-radius: 0; min-height: 100vh; } .layout { display: block; } aside { border-right: 0; border-bottom: 1px solid #e5ebf1; } select { min-height: 170px; max-height: 220px; } pre { max-height: none; min-height: 320px; } }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <h1>DX · Patient case generator</h1>
+      <p>Select any disease in the dataset. The first generated profile is saved and reused for that disease.</p>
+    </header>
+    <div class="layout">
+      <aside>
+        <label for="search">Disease dataset</label>
+        <input id="search" type="search" placeholder="Search diseases…" autocomplete="off">
+        <span id="count">Loading diseases…</span>
+        <select id="disease" size="16" aria-label="Diseases" disabled></select>
+        <button id="generate" type="button" disabled>Load or generate case</button>
+      </aside>
+      <section class="result" aria-label="Generated JSON">
+        <div class="result-top">
+          <h2>Generated profile</h2>
+          <div class="actions">
+            <button id="copy" class="secondary" type="button" disabled>Copy JSON</button>
+            <button id="download" class="secondary" type="button" disabled>Download</button>
+          </div>
+        </div>
+        <p id="status" role="status" aria-live="polite">Choose a disease and generate a case.</p>
+        <pre id="output">Your generated JSON will appear here.</pre>
+        <p class="note">The JSON includes only selected symptoms. Association ranks are not probabilities. Review each synthetic case before using it for education.</p>
+      </section>
+    </div>
+  </main>
+  <script>
+    const search = document.querySelector('#search');
+    const select = document.querySelector('#disease');
+    const count = document.querySelector('#count');
+    const generate = document.querySelector('#generate');
+    const copy = document.querySelector('#copy');
+    const download = document.querySelector('#download');
+    const status = document.querySelector('#status');
+    const output = document.querySelector('#output');
+    let diseases = [];
+    let selectedId = null;
+    let currentJson = null;
+    let busy = false;
+
+    function setStatus(message, error = false) {
+      status.textContent = message;
+      status.classList.toggle('error', error);
+    }
+    function renderList() {
+      const query = search.value.trim().toLowerCase();
+      const visible = diseases.filter(item => item.name.toLowerCase().replaceAll('\u00a0', ' ').includes(query));
+      select.replaceChildren();
+      if (!visible.some(item => item.id === selectedId)) selectedId = visible[0]?.id ?? null;
+      for (const item of visible) {
+        const option = document.createElement('option');
+        option.value = item.id;
+        option.textContent = item.name;
+        option.selected = item.id === selectedId;
+        select.append(option);
+      }
+      count.textContent = `${visible.length} of ${diseases.length} diseases`;
+      select.disabled = busy || visible.length === 0;
+      generate.disabled = busy || selectedId === null;
+    }
+    async function loadDiseases() {
+      try {
+        const response = await fetch('/api/diseases');
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Could not load diseases.');
+        diseases = data.diseases;
+        renderList();
+      } catch (error) { setStatus(error.message, true); count.textContent = 'Could not load diseases'; }
+    }
+    search.addEventListener('input', renderList);
+    select.addEventListener('change', () => { selectedId = Number(select.value); });
+    generate.addEventListener('click', async () => {
+      if (busy || selectedId === null) return;
+      busy = true;
+      const diseaseId = selectedId;
+      renderList();
+      currentJson = null;
+      copy.disabled = true;
+      download.disabled = true;
+      output.textContent = 'Generating patient profile…';
+      setStatus('Loading the saved case or asking Gemini to build it for the first time…');
+      try {
+        const response = await fetch('/api/generate', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({disease_id: diseaseId})
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Generation failed.');
+        currentJson = JSON.stringify(data, null, 2);
+        output.textContent = currentJson;
+        copy.disabled = false;
+        download.disabled = false;
+        setStatus(`${data.patient.name}'s fixed profile is ready for ${data.diagnosis}.`);
+      } catch (error) {
+        output.textContent = 'No profile generated.';
+        setStatus(error.message, true);
+      } finally { busy = false; renderList(); }
+    });
+    copy.addEventListener('click', async () => {
+      if (!currentJson) return;
+      try { await navigator.clipboard.writeText(currentJson); setStatus('JSON copied to clipboard.'); }
+      catch (error) { setStatus('Copy failed. Select and copy the JSON manually.', true); }
+    });
+    download.addEventListener('click', () => {
+      if (!currentJson) return;
+      const url = URL.createObjectURL(new Blob([currentJson], {type: 'application/json'}));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `dx-patient-case-${JSON.parse(currentJson).case_id}.json`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+    loadDiseases();
+  </script>
+</body>
+</html>

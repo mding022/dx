@@ -1,4 +1,7 @@
 __pycache__/
 .venv/
+venv/
+.env
 *.sqlite3-journal
+data/simulations.sqlite3
 upstream/
