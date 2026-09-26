@@ -35,3 +35,16 @@
 .review-patient-portrait{position:absolute;width:83px;height:86px;left:-8px;bottom:-13px}
 .review-patient-copy{min-width:0;flex:1}.review-patient-copy strong{display:block;font-size:16px;letter-spacing:-.025em}.review-patient-copy span{display:block;margin-top:4px;color:#68816c;font-size:11px;font-weight:650}.review-patient-copy p{max-width:680px;margin:6px 0 0;color:#91a092;font-size:11px;line-height:1.5}.review-patient>.status-pill{align-self:flex-start}
 @media(max-width:600px){.review-patient{align-items:flex-start;gap:11px}.review-patient-avatar{width:55px;height:55px;border-radius:12px}.review-patient-portrait{width:69px;height:73px;left:-7px;bottom:-12px}.review-patient-copy strong{font-size:14px}.review-patient-copy span,.review-patient-copy p{font-size:10px}.review-patient>.status-pill{display:none}}
+
+.diagnosis-art{display:block;flex:none;object-fit:contain}
+.library-art{width:44px;height:35px;margin-left:-4px}
+.diagnosis-selected-art{width:36px;height:29px;margin-left:-5px}
+.diagnosis-options button{display:flex;align-items:center;gap:9px;padding:6px 10px}
+.diagnosis-option-art{width:39px;height:31px}
+.diagnosis-line{display:flex;align-items:center;gap:5px;min-width:0}
+.activity-art{width:25px;height:20px;margin-left:-2px}
+.review-diagnosis-row>.review-diagnosis-item{display:flex;align-items:center;gap:13px;min-width:0}
+.review-diagnosis-copy{display:grid;gap:7px;min-width:0}
+.review-diagnosis-copy strong{overflow-wrap:anywhere}
+.review-diagnosis-art{width:73px;height:57px}
+@media(max-width:650px){.review-diagnosis-row>.review-diagnosis-item{gap:6px}.review-diagnosis-art{width:42px;height:34px}.review-diagnosis-copy{gap:4px}}

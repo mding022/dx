@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ArrowUpRight, Search } from "lucide-react";
 import type { Simulation } from "@/lib/backend";
+import { DiagnosisIllustration } from "@/components/DiagnosisIllustration";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date(value));
@@ -20,7 +21,7 @@ export function HistoryList({ simulations }: { simulations: Simulation[] }) {
     {filtered.length ? <div className="history-rows">
       {filtered.map(item => <Link className="history-row" href={`/simulations/${item.id}/evaluate`} key={item.id}>
         <span className="history-avatar">{item.patient.name.split(" ").map(part => part[0]).slice(0, 2).join("")}</span>
-        <span className="history-main"><strong>{item.patient.name}</strong><small>{item.result?.diagnosis ?? "Diagnosis pending"}</small></span>
+        <span className="history-main"><strong>{item.patient.name}</strong><small className="diagnosis-line">{item.result ? <DiagnosisIllustration diseaseId={item.result.diagnosis_id} name={item.result.diagnosis} className="diagnosis-art activity-art" decorative /> : null}{item.result?.diagnosis ?? "Diagnosis pending"}</small></span>
         <span className={`status-pill ${item.status === "completed" ? "complete" : "pending"}`}>{item.status === "completed" ? "Completed" : "Awaiting diagnosis"}</span>
         <span className="history-date">{formatDate(item.created_at)}</span><ArrowUpRight size={18} className="history-arrow" />
       </Link>)}

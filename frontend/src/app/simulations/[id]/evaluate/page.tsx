@@ -46,7 +46,7 @@ export default async function EvaluationPage({ params }: PageProps<"/simulations
     <div className="evaluation-grid">
       <section className="patient-card">
         <div className="patient-card-top"><div><span className="card-eyebrow">PATIENT PROFILE</span><h2>{patient.name}</h2><p>{patient.age} years old <span>·</span> {patient.pronouns}</p></div><span className="id-chip"><ShieldCheck size={15} /> DX PATIENT</span></div>
-        <div className="portrait-panel"><div className="portrait-halo" /><PatientIllustration className="patient-portrait" /><span className="portrait-caption">PATIENT ID <strong>{simulation.id.slice(0, 6).toUpperCase()}</strong></span></div>
+        <div className="portrait-panel"><div className="portrait-halo" /><PatientIllustration className="patient-portrait" pronouns={patient.pronouns} /><span className="portrait-caption">PATIENT ID <strong>{simulation.id.slice(0, 6).toUpperCase()}</strong></span></div>
         <div className="patient-facts"><div><span><CalendarDays size={17} /> Age</span><strong>{patient.age} years</strong></div><div><span><UserRound size={17} /> Pronouns</span><strong>{patient.pronouns}</strong></div><div><span><BriefcaseBusiness size={17} /> Occupation</span><strong>{patient.occupation}</strong></div></div>
       </section>
       <div className="assessment-column">

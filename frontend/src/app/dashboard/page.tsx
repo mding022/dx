@@ -6,6 +6,7 @@ import { getDiseases, listSimulations, type Disease, type Simulation } from "@/l
 import { AppShell } from "@/components/AppShell";
 import { ConditionLibrary } from "@/components/ConditionLibrary";
 import { StartSimulationButton } from "@/components/StartSimulationButton";
+import { DiagnosisIllustration } from "@/components/DiagnosisIllustration";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(new Date(value));
@@ -43,7 +44,7 @@ export default async function Dashboard() {
     <div className="dashboard-grid">
       <section className="panel recent-panel">
         <div className="panel-heading"><div><span className="section-overline">YOUR ACTIVITY</span><h2>Recent simulations</h2></div><Link href="/history" className="text-link">View all <ArrowUpRight size={16} /></Link></div>
-        {simulations.length ? <div className="recent-list">{simulations.slice(0, 4).map(item => <Link href={`/simulations/${item.id}/evaluate`} className="recent-row" key={item.id}><span className="recent-initials">{item.patient.name.split(" ").map(part => part[0]).slice(0, 2).join("")}</span><span className="recent-info"><strong>{item.patient.name}</strong><small>{item.result?.diagnosis ?? "Diagnosis pending"}</small></span><span className="recent-meta"><span className={`status-pill ${item.status === "completed" ? "complete" : "pending"}`}>{item.status === "completed" ? "Completed" : "In progress"}</span><small>{formatDate(item.created_at)}</small></span><ArrowRight size={17} /></Link>)}</div> : <div className="recent-empty"><span className="empty-icon"><Stethoscope size={25} /></span><strong>Your first case is waiting.</strong><p>Start a simulation to begin building your clinical practice history.</p></div>}
+        {simulations.length ? <div className="recent-list">{simulations.slice(0, 4).map(item => <Link href={`/simulations/${item.id}/evaluate`} className="recent-row" key={item.id}><span className="recent-initials">{item.patient.name.split(" ").map(part => part[0]).slice(0, 2).join("")}</span><span className="recent-info"><strong>{item.patient.name}</strong><small className="diagnosis-line">{item.result ? <DiagnosisIllustration diseaseId={item.result.diagnosis_id} name={item.result.diagnosis} className="diagnosis-art activity-art" decorative /> : null}{item.result?.diagnosis ?? "Diagnosis pending"}</small></span><span className="recent-meta"><span className={`status-pill ${item.status === "completed" ? "complete" : "pending"}`}>{item.status === "completed" ? "Completed" : "In progress"}</span><small>{formatDate(item.created_at)}</small></span><ArrowRight size={17} /></Link>)}</div> : <div className="recent-empty"><span className="empty-icon"><Stethoscope size={25} /></span><strong>Your first case is waiting.</strong><p>Start a simulation to begin building your clinical practice history.</p></div>}
       </section>
       <ConditionLibrary diseases={diseases} />
     </div>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Check, LoaderCircle, Search } from "lucide-react";
 import type { Disease } from "@/lib/backend";
 import { searchDiseases } from "@/lib/disease-search";
+import { DiagnosisIllustration } from "@/components/DiagnosisIllustration";
 
 export function DiagnosisForm({ diseases, simulationId }: { diseases: Disease[]; simulationId: string }) {
   const router = useRouter();
@@ -44,7 +45,7 @@ export function DiagnosisForm({ diseases, simulationId }: { diseases: Disease[];
   return <div className="diagnosis-form">
     <label htmlFor="diagnosis-search" className="field-label">Your diagnosis</label>
     <div className="combobox-wrap">
-      <div className={`diagnosis-input ${open ? "focused" : ""}`}><Search size={19} /><input
+      <div className={`diagnosis-input ${open ? "focused" : ""}`}>{selected ? <DiagnosisIllustration diseaseId={selected.id} name={selected.name} className="diagnosis-art diagnosis-selected-art" /> : <Search size={19} />}<input
         id="diagnosis-search" role="combobox" aria-expanded={open} aria-controls="diagnosis-options" aria-autocomplete="list"
         placeholder="Type to search the condition library" value={query} autoComplete="off"
         onFocus={() => setOpen(true)}
@@ -57,7 +58,7 @@ export function DiagnosisForm({ diseases, simulationId }: { diseases: Disease[];
         }}
       />{selected ? <Check size={18} className="selected-check" /> : null}</div>
       {open ? <div className="diagnosis-options" id="diagnosis-options" role="listbox">
-        {results.length ? results.map((disease, index) => <button type="button" role="option" aria-selected={index === activeIndex} className={index === activeIndex ? "option-active" : ""} key={disease.id} onMouseDown={event => event.preventDefault()} onClick={() => choose(disease)}>{disease.name}</button>) : <div className="no-options">No matching condition</div>}
+        {results.length ? results.map((disease, index) => <button type="button" role="option" aria-selected={index === activeIndex} className={index === activeIndex ? "option-active" : ""} key={disease.id} onMouseDown={event => event.preventDefault()} onClick={() => choose(disease)}><DiagnosisIllustration diseaseId={disease.id} name={disease.name} className="diagnosis-art diagnosis-option-art" /><span>{disease.name}</span></button>) : <div className="no-options">No matching condition</div>}
       </div> : null}
     </div>
     <p className="field-hint">Choose one diagnosis from the database to complete this case.</p>
