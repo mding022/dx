@@ -1,7 +1,7 @@
 "use client";
 
-import Script from "next/script";
-import { createElement, useState } from "react";
+import { useState } from "react";
+import { ConversationProvider, useConversation } from "@elevenlabs/react";
 import type { ConversationPatient } from "@/lib/backend";
 import { CallStatus } from "@/components/CallStatus";
 
@@ -11,33 +11,51 @@ type Props = {
   patient: ConversationPatient | null;
 };
 
-export function PatientConversationWidget({ agentId, patientName, patient }: Props) {
-  const [scriptState, setScriptState] = useState<"loading" | "ready" | "error">("loading");
+function InterviewControls({ agentId, patientName, patient }: Props) {
+  const [starting, setStarting] = useState(false);
+  const [error, setError] = useState("");
+  const conversation = useConversation({
+    onConnect: () => { setStarting(false); setError(""); },
+    onDisconnect: () => setStarting(false),
+    onError: () => {
+      setStarting(false);
+      setError("The call could not connect. Check microphone access and try again.");
+    },
+  });
   const configured = Boolean(agentId && patient);
 
-  return <>
-    <CallStatus patientName={patientName} state={configured ? scriptState : "unavailable"} />
-    {configured && patient ? <>
-      {/* Supply the saved patient's variables before the custom element starts a call. */}
-      {createElement("elevenlabs-convai", {
-        "agent-id": agentId,
-        "dynamic-variables": JSON.stringify({
+  async function start() {
+    if (!configured || !patient || starting || (conversation.status !== "disconnected" && conversation.status !== "error")) return;
+    setStarting(true);
+    setError("");
+    try {
+      const microphone = await navigator.mediaDevices.getUserMedia({ audio: true });
+      microphone.getTracks().forEach(track => track.stop());
+      conversation.startSession({
+        agentId,
+        dynamicVariables: {
           patient_json: JSON.stringify(patient),
           opening_line: patient.opening_line,
-        }),
-        "action-text": `Interview ${patientName.split(" ")[0]}`,
-        "start-call-text": "Start patient interview",
-        "end-call-text": "End interview",
-        "avatar-orb-color-1": "#446c57",
-        "avatar-orb-color-2": "#d5ef97",
-      })}
-      <Script
-        id="elevenlabs-patient-widget"
-        src="https://unpkg.com/@elevenlabs/convai-widget-embed@0.16.0"
-        strategy="afterInteractive"
-        onReady={() => setScriptState("ready")}
-        onError={() => setScriptState("error")}
-      />
-    </> : null}
-  </>;
+        },
+      });
+    } catch {
+      setStarting(false);
+      setError("Microphone access is needed to interview this patient. Allow access and try again.");
+    }
+  }
+
+  return <CallStatus
+    patientName={patientName}
+    state={!configured ? "unavailable" : error || conversation.status === "error" ? "error" : starting || conversation.status === "connecting" ? "connecting" : conversation.status === "connected" ? "connected" : "ready"}
+    isSpeaking={conversation.isSpeaking}
+    isMuted={conversation.isMuted}
+    error={error}
+    onStart={start}
+    onEnd={() => conversation.endSession()}
+    onToggleMute={() => conversation.setMuted(!conversation.isMuted)}
+  />;
+}
+
+export function PatientConversationWidget(props: Props) {
+  return <ConversationProvider><InterviewControls {...props} /></ConversationProvider>;
 }

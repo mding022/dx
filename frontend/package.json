@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "^4.30.0",
+    "@elevenlabs/react": "^1.15.2",
     "lucide-react": "^1.48.0",
     "next": "16.3.6",
     "react": "19.2.8",
