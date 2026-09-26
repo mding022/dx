@@ -8,14 +8,17 @@ from app import CaseGenerator, PatientPersona, PatientProfile
 
 
 class FakeModels:
-    def __init__(self, rank=1):
+    def __init__(self, rank=1, fail_persona=False):
         self.calls = 0
         self.rank = rank
+        self.fail_persona = fail_persona
 
     def generate_content(self, **kwargs):
         self.calls += 1
         self.config = kwargs["config"]
         if self.config.response_schema is PatientPersona:
+            if self.fail_persona:
+                raise RuntimeError("Simulated Gemini failure")
             persona = PatientPersona(
                 occupation="Teacher",
                 background=f"Lives near family; variation {self.calls}.",
@@ -51,8 +54,8 @@ class FakeModels:
 
 
 class FakeClient:
-    def __init__(self, rank=1):
-        self.models = FakeModels(rank)
+    def __init__(self, rank=1, fail_persona=False):
+        self.models = FakeModels(rank, fail_persona)
 
 
 class CaseGeneratorTests(unittest.TestCase):
@@ -100,12 +103,20 @@ class CaseGeneratorTests(unittest.TestCase):
             self.assertNotEqual(first["patient"]["name"], second["patient"]["name"])
             self.assertNotEqual(first["patient"]["age"], second["patient"]["age"])
             self.assertNotEqual(first["patient"]["pronouns"], second["patient"]["pronouns"])
+            self.assertEqual({first["patient"]["pronouns"], second["patient"]["pronouns"]}, {"he/him", "she/her"})
             self.assertNotEqual(first["patient"]["background"], second["patient"]["background"])
             self.assertEqual(set(first), set(second))
             self.assertEqual(set(first["patient"]), set(second["patient"]))
             with closing(sqlite3.connect(cache)) as db:
                 self.assertEqual(db.execute("SELECT COUNT(*) FROM cases").fetchone()[0], 1)
                 self.assertEqual(db.execute("SELECT COUNT(*) FROM persona_state").fetchone()[0], 1)
+
+    def test_persona_fallback_keeps_supported_pronouns(self):
+        with tempfile.TemporaryDirectory() as directory:
+            generator = CaseGenerator(client=FakeClient(fail_persona=True), cache_database=Path(directory) / "cases.sqlite3")
+            first = generator.generate_personalized(5)
+            second = generator.generate_personalized(5)
+            self.assertEqual({first["patient"]["pronouns"], second["patient"]["pronouns"]}, {"he/him", "she/her"})
 
 
 if __name__ == "__main__":

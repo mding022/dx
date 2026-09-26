@@ -63,14 +63,13 @@ class PatientPersona(BaseModel):
 PERSONA_NAMES = {
     "she/her": ("Maya Chen", "Leila Haddad", "Sofia Alvarez", "Nina Patel", "Amara Okafor", "Elena Rossi", "Priya Shah", "Grace Kim"),
     "he/him": ("Daniel Park", "Mateo Rivera", "Omar Hassan", "Noah Bennett", "Ethan Brooks", "Samuel Okoro", "Leo Martin", "Arjun Mehta"),
-    "they/them": ("Jordan Lee", "Alex Morgan", "Avery Quinn", "Riley Chen", "Taylor Brooks", "Morgan Patel", "Casey Rivera", "Jamie Reed"),
 }
 PERSONA_HOBBIES = ("gardening", "cooking", "reading", "painting", "playing board games", "watching films", "photography", "listening to music")
 
 
 SYSTEM_INSTRUCTION = """Create one fictional patient profile for a medical education simulation.
 The input is a disease record and its ranked associated terms from a historical source dataset. The rank is association strength, not symptom probability. The list can contain lab findings, exam signs, tests, and noisy associations; it is not a checklist to copy. Select only a few patient-observable terms that make a medically plausible presentation of the named disease. Every returned symptom must correspond to one input term and have that term's exact association_rank. Favor stronger associations when plausible, but never turn a test or clinical finding into something the patient claims to feel. Use general medical knowledge only to make the fictional story coherent; do not add unranked symptoms, test results, or vital signs. If the disease label is broad or ambiguous, make a conservative presentation and avoid false precision.
-Give the patient a consistent age, background, symptom onset, and progression. Use everyday patient language. Do not reveal the diagnosis in the chief complaint or opening line. Keep all fields concise. Use empty lists when medications, allergies, or history are unknown; do not fabricate clinical certainty. The result is a synthetic case for testing, not medical guidance."""
+Give the patient he/him or she/her pronouns, with a consistent age, background, symptom onset, and progression. Use everyday patient language. Do not reveal the diagnosis in the chief complaint or opening line. Keep all fields concise. Use empty lists when medications, allergies, or history are unknown; do not fabricate clinical certainty. The result is a synthetic case for testing, not medical guidance."""
 
 PERSONA_INSTRUCTION = """Write a fresh fictional patient identity and narrative for an existing medical education case.
 Use the exact supplied name, age, and pronouns. Keep the cached symptoms, symptom onset and severity, medical history, medications, allergies, chief complaint, and clinical course consistent. Return only the requested narrative fields. Rewrite references to home life, work, travel, pets, or exposures coherently: if a cached clue depends on one of them, preserve that fact in the new person's background and follow-up details. Occupation may remain similar when the case requires it. Write the opening line in the patient's own voice and never reveal the diagnosis there. Do not add symptoms, test results, vital signs, or unsupported clinical facts. Keep the narrative concise. This is a synthetic case, not medical guidance."""
@@ -243,10 +242,6 @@ class CaseGenerator:
             updates = persona.model_dump()
         except Exception:
             logging.exception("Patient variation failed; using a local identity variation")
-            pronouns = base_patient["pronouns"]
-            fallback_names = PERSONA_NAMES.get(pronouns, PERSONA_NAMES["they/them"])
-            previous_name = (self._last_persona(disease_id) or (None,))[0]
-            name = secrets.choice([value for value in fallback_names if value not in (base_patient["name"], previous_name)])
             updates = {
                 "occupation": base_patient["occupation"],
                 "background": f"{base_patient['background']} In free time, enjoys {secrets.choice(PERSONA_HOBBIES)}.",

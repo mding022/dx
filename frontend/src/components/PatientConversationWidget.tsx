@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ConversationProvider, useConversation } from "@elevenlabs/react";
 import type { ConversationPatient } from "@/lib/backend";
 import { CallStatus } from "@/components/CallStatus";
+import { patientVoiceId } from "@/lib/patient-voice";
 
 type Props = {
   agentId: string;
@@ -17,30 +18,36 @@ function InterviewControls({ agentId, patientName, patient }: Props) {
   const conversation = useConversation({
     onConnect: () => { setStarting(false); setError(""); },
     onDisconnect: () => setStarting(false),
-    onError: () => {
+    onError: (message, context) => {
       setStarting(false);
-      setError("The call could not connect. Check microphone access and try again.");
+      console.error("ElevenLabs interview connection failed", message, context);
+      const detail = context instanceof Error ? context.message : message;
+      setError(/voice|override|forbidden|403/i.test(detail)
+        ? "The selected voice was rejected. Enable Voice ID overrides for this agent in ElevenLabs Security settings and check that the voice is available."
+        : /microphone|permission|media device|notallowed/i.test(detail)
+          ? "Microphone access was blocked. Allow microphone access for this site and try again."
+          : `ElevenLabs could not connect: ${detail}. Check the agent's Voice ID override setting and try again.`);
     },
   });
   const configured = Boolean(agentId && patient);
 
-  async function start() {
+  function start() {
     if (!configured || !patient || starting || (conversation.status !== "disconnected" && conversation.status !== "error")) return;
     setStarting(true);
     setError("");
     try {
-      const microphone = await navigator.mediaDevices.getUserMedia({ audio: true });
-      microphone.getTracks().forEach(track => track.stop());
       conversation.startSession({
         agentId,
+        connectionType: "websocket",
         dynamicVariables: {
           patient_json: JSON.stringify(patient),
           opening_line: patient.opening_line,
         },
+        overrides: { tts: { voiceId: patientVoiceId(patient) } },
       });
-    } catch {
+    } catch (cause) {
       setStarting(false);
-      setError("Microphone access is needed to interview this patient. Allow access and try again.");
+      setError(cause instanceof Error ? cause.message : "The call could not start. Please try again.");
     }
   }
 

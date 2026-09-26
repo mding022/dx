@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, CheckCircle2, Clock3, Sparkles, Stethoscope } from "lucide-react";
+import { ArrowRight, ArrowUpRight, CheckCircle2, Clock3, Stethoscope } from "lucide-react";
 import { redirect } from "next/navigation";
 import { auth0 } from "@/lib/auth0";
 import { getDiseases, listSimulations, type Disease, type Simulation } from "@/lib/backend";
@@ -31,7 +31,7 @@ export default async function Dashboard() {
     {backendError ? <div className="notice" role="status">The case service is offline. Start the Python backend to load your simulations.</div> : null}
 
     <section className="hero-card">
-      <div className="hero-copy"><span className="hero-kicker"><Sparkles size={14} /> THE CLINICAL STUDIO</span><h2>Every great diagnosis<br />starts with curiosity.</h2><p>Step into a new patient encounter and put your clinical reasoning to work.</p><StartSimulationButton /></div>
+      <div className="hero-copy"><h2>Work through a<br />patient case.</h2><p>Interview the patient, make your diagnosis, and review the evidence behind your decision.</p><StartSimulationButton /></div>
       <div className="hero-art" aria-hidden="true"><span className="art-orbit art-orbit-one" /><span className="art-orbit art-orbit-two" /><span className="art-main"><Stethoscope size={90} strokeWidth={1.1} /></span><span className="art-dot art-dot-one" /><span className="art-dot art-dot-two" /></div>
     </section>
 
