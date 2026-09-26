@@ -41,7 +41,7 @@
   <main class="app">
     <header>
       <h1>DX · Patient case generator</h1>
-      <p>Select any disease in the dataset. The first generated profile is saved and reused for that disease.</p>
+      <p>Select any disease in the dataset. Clinical clues are cached; each request creates a new patient.</p>
     </header>
     <div class="layout">
       <aside>
@@ -119,7 +119,7 @@
       copy.disabled = true;
       download.disabled = true;
       output.textContent = 'Generating patient profile…';
-      setStatus('Loading the saved case or asking Gemini to build it for the first time…');
+      setStatus('Preparing a new patient with the saved clinical clues…');
       try {
         const response = await fetch('/api/generate', {
           method: 'POST', headers: {'Content-Type': 'application/json'},
@@ -131,7 +131,7 @@
         output.textContent = currentJson;
         copy.disabled = false;
         download.disabled = false;
-        setStatus(`${data.patient.name}'s fixed profile is ready for ${data.diagnosis}.`);
+        setStatus(`${data.patient.name}'s profile is ready for ${data.diagnosis}.`);
       } catch (error) {
         output.textContent = 'No profile generated.';
         setStatus(error.message, true);
