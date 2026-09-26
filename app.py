@@ -4,14 +4,12 @@ import json
 import logging
 import os
 import sqlite3
-import shutil
 import hmac
 import secrets
 import copy
 from contextlib import closing
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from threading import Lock
 
 from dotenv import load_dotenv
 from google import genai
@@ -19,14 +17,13 @@ from google.genai import types
 from pydantic import BaseModel, Field, ValidationError
 
 from illness_repository import IllnessRepository
-from runtime_storage import runtime_database
+from runtime_storage import connect_writable_database, runtime_database, turso_configured
 from simulation_repository import SimulationRepository
 
 
 ROOT = Path(__file__).resolve().parent
 CACHE_SEED_DB = ROOT / "data" / "generated_cases.sqlite3"
 CACHE_DB = runtime_database("generated_cases.sqlite3")
-_CACHE_SEED_LOCK = Lock()
 SCHEMA_VERSION = 1
 load_dotenv(ROOT / ".env")
 
@@ -81,19 +78,15 @@ Use the exact supplied name, age, and pronouns. Keep the cached symptoms, sympto
 
 
 class CaseGenerator:
-    def __init__(self, repo=None, client=None, cache_database=CACHE_DB):
+    def __init__(self, repo=None, client=None, cache_database=None):
         self.repo = repo or IllnessRepository()
         self.client = client
         self.model = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
-        self.cache_database = Path(cache_database)
+        self.cache_database = Path(cache_database) if cache_database is not None else CACHE_DB
+        self.use_turso = cache_database is None
 
     def _cache_connection(self):
-        self.cache_database.parent.mkdir(parents=True, exist_ok=True)
-        if self.cache_database == CACHE_DB and CACHE_DB != CACHE_SEED_DB and CACHE_SEED_DB.is_file():
-            with _CACHE_SEED_LOCK:
-                if not self.cache_database.exists():
-                    shutil.copyfile(CACHE_SEED_DB, self.cache_database)
-        db = sqlite3.connect(self.cache_database, timeout=30)
+        db = connect_writable_database(self.cache_database, use_turso=self.use_turso)
         db.execute("""CREATE TABLE IF NOT EXISTS cases (
             disease_id INTEGER PRIMARY KEY,
             schema_version INTEGER NOT NULL,
@@ -150,6 +143,12 @@ class CaseGenerator:
                 "SELECT case_json FROM cases WHERE disease_id=? AND schema_version=?",
                 (disease_id, SCHEMA_VERSION),
             ).fetchone()
+        if row is None and self.use_turso and turso_configured() and CACHE_SEED_DB.is_file():
+            with closing(sqlite3.connect(CACHE_SEED_DB.as_uri() + "?mode=ro", uri=True)) as seed:
+                row = seed.execute(
+                    "SELECT case_json FROM cases WHERE disease_id=? AND schema_version=?",
+                    (disease_id, SCHEMA_VERSION),
+                ).fetchone()
         return json.loads(row[0]) if row else None
 
     def _save_case(self, disease_id, case):
@@ -352,8 +351,8 @@ class Handler(BaseHTTPRequestHandler):
         except RuntimeError as exc:
             self._json(503, {"error": str(exc)})
         except Exception:
-            logging.exception("Gemini case generation failed")
-            self._json(502, {"error": "Gemini request failed. Check the key, model, and server terminal."})
+            logging.exception("Backend request failed")
+            self._json(502, {"error": "Backend request failed. Check the server logs."})
 
 
 if __name__ == "__main__":

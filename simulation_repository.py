@@ -1,14 +1,13 @@
 """Account-scoped simulation history stored separately from the source dataset."""
 
 import json
-import sqlite3
 from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
 from case_review import build_case_review
-from runtime_storage import runtime_database
+from runtime_storage import connect_writable_database, runtime_database
 
 
 DEFAULT_DB = runtime_database("simulations.sqlite3")
@@ -23,13 +22,12 @@ PATIENT_CONVERSATION_FIELDS = PATIENT_PROFILE_FIELDS + (
 
 
 class SimulationRepository:
-    def __init__(self, database=DEFAULT_DB):
-        self.database = Path(database)
+    def __init__(self, database=None):
+        self.database = Path(database) if database is not None else DEFAULT_DB
+        self.use_turso = database is None
 
     def _connect(self):
-        self.database.parent.mkdir(parents=True, exist_ok=True)
-        db = sqlite3.connect(self.database, timeout=30)
-        db.row_factory = sqlite3.Row
+        db = connect_writable_database(self.database, use_turso=self.use_turso, rows=True)
         db.execute("""CREATE TABLE IF NOT EXISTS simulations (
             id TEXT PRIMARY KEY,
             user_id TEXT NOT NULL,

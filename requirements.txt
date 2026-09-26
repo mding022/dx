@@ -2,3 +2,4 @@ openpyxl>=3.1,<4
 google-genai>=1,<2
 pydantic>=2.9,<3
 python-dotenv>=1,<2
+turso-serverless==0.1.0

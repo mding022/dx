@@ -1,45 +1,65 @@
-"""Vercel runtime databases must not write into the deployment bundle."""
+"""Persistent storage works across backend instances."""
 
 import os
 import sqlite3
 import tempfile
+import types
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-import app
-import runtime_storage
-from runtime_storage import ROOT, runtime_database
+from app import CACHE_SEED_DB, CaseGenerator
+from runtime_storage import connect_writable_database, runtime_database
+from simulation_repository import SimulationRepository
 
 
 class RuntimeStorageTests(unittest.TestCase):
-    def test_vercel_uses_temporary_storage(self):
-        with tempfile.TemporaryDirectory() as directory:
-            with patch.dict(os.environ, {"VERCEL": "1"}):
-                with patch("runtime_storage.tempfile.gettempdir", return_value=directory):
-                    self.assertEqual(runtime_database("simulations.sqlite3"),
-                                     Path(directory) / "dx" / "simulations.sqlite3")
-            with patch.dict(os.environ, {"VERCEL": "", "VERCEL_ENV": ""}):
-                self.assertEqual(runtime_database("simulations.sqlite3"),
-                                 ROOT / "data" / "simulations.sqlite3")
-                with patch.object(runtime_storage, "ROOT", Path("/var/task")):
-                    with patch("runtime_storage.tempfile.gettempdir", return_value=directory):
-                        self.assertEqual(runtime_database("simulations.sqlite3"),
-                                         Path(directory) / "dx" / "simulations.sqlite3")
+    def test_vercel_requires_turso_credentials(self):
+        with patch.dict(os.environ, {"VERCEL": "1", "TURSO_DATABASE_URL": "", "TURSO_AUTH_TOKEN": ""}):
+            with self.assertRaisesRegex(RuntimeError, "TURSO_DATABASE_URL and TURSO_AUTH_TOKEN"):
+                connect_writable_database(runtime_database("simulations.sqlite3"))
 
-    def test_case_cache_is_copied_before_writing(self):
+    def test_remote_cache_and_history_survive_new_instances(self):
         with tempfile.TemporaryDirectory() as directory:
-            destination = Path(directory) / "generated_cases.sqlite3"
-            with sqlite3.connect(app.CACHE_SEED_DB) as db:
-                initial_count = db.execute("SELECT COUNT(*) FROM cases").fetchone()[0]
-            with patch.object(app, "CACHE_DB", destination):
-                generator = app.CaseGenerator(cache_database=destination)
-                saved = generator._save_case(9999, {"case_id": 9999})
-            self.assertEqual(saved, {"case_id": 9999})
-            with sqlite3.connect(destination) as db:
-                self.assertEqual(db.execute("SELECT COUNT(*) FROM cases").fetchone()[0], initial_count + 1)
-            with sqlite3.connect(app.CACHE_SEED_DB) as db:
-                self.assertEqual(db.execute("SELECT COUNT(*) FROM cases").fetchone()[0], initial_count)
+            remote_file = Path(directory) / "turso.sqlite3"
+            fake_driver = types.SimpleNamespace(
+                connect=lambda url, auth_token: sqlite3.connect(remote_file),
+                Row=sqlite3.Row,
+            )
+            with sqlite3.connect(CACHE_SEED_DB) as seed:
+                disease_id = seed.execute("SELECT disease_id FROM cases LIMIT 1").fetchone()[0]
+            with patch.dict(os.environ, {
+                "TURSO_DATABASE_URL": "libsql://dx.turso.io",
+                "TURSO_AUTH_TOKEN": "test-token",
+            }), patch.dict("sys.modules", {"turso_serverless": fake_driver}):
+                generator = CaseGenerator()
+                self.assertIsNotNone(generator._cached_case(disease_id))
+                generator._save_case(9999, {"case_id": 9999})
+                self.assertEqual(CaseGenerator()._cached_case(9999), {"case_id": 9999})
+
+                case = {
+                    "case_id": 9999,
+                    "diagnosis": "test",
+                    "patient": {
+                        "name": "Maya", "age": 34, "pronouns": "she/her",
+                        "occupation": "Teacher", "background": "Lives nearby.",
+                        "medical_history": [], "medications": [], "allergies": [],
+                    },
+                }
+                simulation_id = SimulationRepository().create("student", case)["simulation_id"]
+                saved = SimulationRepository().get_for_user("student", simulation_id, lambda _: "test")
+                self.assertEqual(saved["patient"]["name"], "Maya")
+
+    def test_local_development_uses_sqlite(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "local.sqlite3"
+            with patch.dict(os.environ, {
+                "VERCEL": "", "VERCEL_ENV": "",
+                "TURSO_DATABASE_URL": "", "TURSO_AUTH_TOKEN": "",
+            }):
+                with connect_writable_database(path) as db:
+                    db.execute("CREATE TABLE demo (id INTEGER PRIMARY KEY)")
+                self.assertTrue(path.is_file())
 
 
 if __name__ == "__main__":
