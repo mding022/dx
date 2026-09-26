@@ -73,7 +73,7 @@ export class BackendError extends Error {
   }
 }
 
-const backendUrl = () => process.env.DX_BACKEND_URL ?? "http://127.0.0.1:8001";
+const backendUrl = () => process.env.DX_BACKEND_URL ?? "https://dx-six-ivory.vercel.app";
 
 export async function backendPost<T>(path: string, body: Record<string, unknown>): Promise<T> {
   const token = process.env.DX_BACKEND_TOKEN;
