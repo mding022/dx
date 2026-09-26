@@ -4,12 +4,14 @@ import json
 import logging
 import os
 import sqlite3
+import shutil
 import hmac
 import secrets
 import copy
 from contextlib import closing
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from threading import Lock
 
 from dotenv import load_dotenv
 from google import genai
@@ -17,11 +19,14 @@ from google.genai import types
 from pydantic import BaseModel, Field, ValidationError
 
 from illness_repository import IllnessRepository
+from runtime_storage import runtime_database
 from simulation_repository import SimulationRepository
 
 
 ROOT = Path(__file__).resolve().parent
-CACHE_DB = ROOT / "data" / "generated_cases.sqlite3"
+CACHE_SEED_DB = ROOT / "data" / "generated_cases.sqlite3"
+CACHE_DB = runtime_database("generated_cases.sqlite3")
+_CACHE_SEED_LOCK = Lock()
 SCHEMA_VERSION = 1
 load_dotenv(ROOT / ".env")
 
@@ -84,6 +89,10 @@ class CaseGenerator:
 
     def _cache_connection(self):
         self.cache_database.parent.mkdir(parents=True, exist_ok=True)
+        if self.cache_database == CACHE_DB and CACHE_DB != CACHE_SEED_DB and CACHE_SEED_DB.is_file():
+            with _CACHE_SEED_LOCK:
+                if not self.cache_database.exists():
+                    shutil.copyfile(CACHE_SEED_DB, self.cache_database)
         db = sqlite3.connect(self.cache_database, timeout=30)
         db.execute("""CREATE TABLE IF NOT EXISTS cases (
             disease_id INTEGER PRIMARY KEY,

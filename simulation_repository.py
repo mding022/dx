@@ -8,9 +8,10 @@ from pathlib import Path
 from uuid import uuid4
 
 from case_review import build_case_review
+from runtime_storage import runtime_database
 
 
-DEFAULT_DB = Path(__file__).resolve().parent / "data/simulations.sqlite3"
+DEFAULT_DB = runtime_database("simulations.sqlite3")
 PATIENT_PROFILE_FIELDS = (
     "name", "age", "pronouns", "occupation", "background",
     "medical_history", "medications", "allergies",
