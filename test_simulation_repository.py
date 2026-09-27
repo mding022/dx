@@ -94,6 +94,45 @@ class SimulationRepositoryTests(unittest.TestCase):
             self.assertEqual(repo.get_for_user("student", simulation_id,
                 lambda disease_id: {5: "pneumonia", 8: "asthma"}[disease_id], diseases.get)["result"]["review"], review)
 
+    def test_insights_unlock_after_five_completed_cases_and_stay_account_scoped(self):
+        case = {"case_id": 5, "diagnosis": "pneumonia", "patient": {
+            "name": "Alex Rivera", "age": 42, "pronouns": "he/him",
+            "occupation": "Teacher", "background": "Lives with family.",
+            "medical_history": [], "medications": [], "allergies": [],
+            "symptom_timeline": "Cough, then fever.",
+            "details_to_reveal_if_asked": [], "pertinent_negatives": [],
+            "symptoms": [
+                {"association_rank": 1, "name": "cough", "patient_description": "Coughing", "onset": "Monday", "severity": "Moderate"},
+                {"association_rank": 2, "name": "fever", "patient_description": "Feverish", "onset": "Tuesday", "severity": "Mild"},
+            ],
+        }}
+        diseases = {
+            5: {"symptoms": [{"id": 45, "rank": 1}, {"id": 46, "rank": 2}]},
+            8: {"symptoms": [{"id": 45, "rank": 3}]},
+        }
+        names = {5: "pneumonia", 8: "asthma"}
+        with tempfile.TemporaryDirectory() as directory:
+            repo = SimulationRepository(Path(directory) / "simulations.sqlite3")
+            other_id = repo.create("other-student", case)["simulation_id"]
+            repo.complete("other-student", other_id, 8, names.get)
+            for index in range(4):
+                simulation_id = repo.create("student", case)["simulation_id"]
+                repo.complete("student", simulation_id, 8 if index < 2 else 5, names.get)
+
+            locked = repo.insights_for_user("student", names.get, diseases.get)
+            self.assertEqual(locked, {"unlocked": False, "completed_cases": 4, "required_cases": 5})
+            self.assertEqual(repo.insights_for_user("other-student", names.get, diseases.get)["completed_cases"], 1)
+
+            fifth_id = repo.create("student", case)["simulation_id"]
+            self.assertEqual(repo.insights_for_user("student", names.get, diseases.get)["completed_cases"], 4)
+            repo.complete("student", fifth_id, 5, names.get)
+            insights = repo.insights_for_user("student", names.get, diseases.get)
+            self.assertTrue(insights["unlocked"])
+            self.assertEqual((insights["completed_cases"], insights["correct_cases"], insights["incorrect_cases"]), (5, 3, 2))
+            self.assertEqual(insights["top_confusions"][0]["count"], 2)
+            self.assertEqual(insights["top_confusions"][0]["clues"], ["fever"])
+            self.assertEqual(insights["clues_to_revisit"], [{"symptom_id": 46, "name": "fever", "count": 2, "associated_diseases": ["pneumonia"]}])
+
 
 if __name__ == "__main__":
     unittest.main()

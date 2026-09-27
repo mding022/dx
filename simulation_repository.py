@@ -19,6 +19,7 @@ PATIENT_CONVERSATION_FIELDS = PATIENT_PROFILE_FIELDS + (
     "chief_complaint", "opening_line", "symptom_timeline",
     "pertinent_negatives", "details_to_reveal_if_asked",
 )
+INSIGHTS_UNLOCK_CASES = 5
 
 
 class SimulationRepository:
@@ -81,6 +82,96 @@ class SimulationRepository:
         with closing(self._connect()) as db:
             rows = db.execute("SELECT * FROM simulations WHERE user_id=? ORDER BY created_at DESC, id DESC", (user_id,)).fetchall()
         return [self._view(row, disease_lookup(row["diagnosis_id"]) if row["diagnosis_id"] else None) for row in rows]
+
+    def insights_for_user(self, user_id, disease_lookup, disease_details):
+        """Summarize completed reviews without exposing another account's cases."""
+        with closing(self._connect()) as db:
+            rows = db.execute(
+                "SELECT id, case_id, case_json, diagnosis_id FROM simulations "
+                "WHERE user_id=? AND status='completed' ORDER BY completed_at DESC, id DESC",
+                (user_id,),
+            ).fetchall()
+
+        completed = len(rows)
+        locked = {"unlocked": False, "completed_cases": completed, "required_cases": INSIGHTS_UNLOCK_CASES}
+        if completed < INSIGHTS_UNLOCK_CASES:
+            return locked
+
+        details_cache = {}
+        name_cache = {}
+
+        def details(disease_id):
+            if disease_id not in details_cache:
+                details_cache[disease_id] = disease_details(disease_id)
+            return details_cache[disease_id]
+
+        def name(disease_id):
+            if disease_id not in name_cache:
+                name_cache[disease_id] = disease_lookup(disease_id) or f"Condition {disease_id}"
+            return name_cache[disease_id]
+
+        correct = 0
+        confusions = {}
+        clues = {}
+        for row in rows:
+            case = json.loads(row["case_json"])
+            actual_id = row["case_id"]
+            chosen_id = row["diagnosis_id"]
+            if actual_id == chosen_id:
+                correct += 1
+                continue
+
+            actual_name = case.get("diagnosis") or name(actual_id)
+            chosen_name = name(chosen_id)
+            pair_key = (actual_id, chosen_id)
+            if pair_key not in confusions:
+                confusions[pair_key] = {
+                    "actual_diagnosis": actual_name,
+                    "actual_diagnosis_id": actual_id,
+                    "chosen_diagnosis": chosen_name,
+                    "chosen_diagnosis_id": chosen_id,
+                    "count": 0,
+                    "example_simulation_id": row["id"],
+                    "clues": {},
+                }
+            pair = confusions[pair_key]
+            pair["count"] += 1
+
+            review = build_case_review(case, details(actual_id), details(chosen_id))
+            actual_by_rank = {
+                symptom["rank"]: symptom["id"]
+                for symptom in (details(actual_id) or {}).get("symptoms", [])
+            }
+            seen_ids = set()
+            for symptom in review["not_linked_to_selected_diagnosis"]:
+                source_id = actual_by_rank.get(symptom["association_rank"])
+                if source_id is None or source_id in seen_ids:
+                    continue
+                seen_ids.add(source_id)
+                label = symptom["name"]
+                if source_id not in clues:
+                    clues[source_id] = {"symptom_id": source_id, "name": label, "count": 0, "associated_diseases": set()}
+                clues[source_id]["count"] += 1
+                clues[source_id]["associated_diseases"].add(actual_name)
+                pair["clues"][source_id] = label
+
+        top_confusions = sorted(confusions.values(), key=lambda item: (-item["count"], item["actual_diagnosis"], item["chosen_diagnosis"]))[:6]
+        for pair in top_confusions:
+            pair["clues"] = list(pair["clues"].values())[:3]
+
+        top_clues = sorted(clues.values(), key=lambda item: (-item["count"], item["name"]))[:8]
+        for clue in top_clues:
+            clue["associated_diseases"] = sorted(clue["associated_diseases"])
+
+        return {
+            "unlocked": True,
+            "completed_cases": completed,
+            "required_cases": INSIGHTS_UNLOCK_CASES,
+            "correct_cases": correct,
+            "incorrect_cases": completed - correct,
+            "top_confusions": top_confusions,
+            "clues_to_revisit": top_clues,
+        }
 
     def get_for_user(self, user_id, simulation_id, disease_lookup, disease_details=None):
         with closing(self._connect()) as db:

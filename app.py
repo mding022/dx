@@ -317,7 +317,7 @@ class Handler(BaseHTTPRequestHandler):
         simulation_paths = {
             "/api/simulations/start", "/api/simulations/list",
             "/api/simulations/get", "/api/simulations/complete",
-            "/api/simulations/conversation",
+            "/api/simulations/conversation", "/api/simulations/insights",
         }
         if self.path != "/api/generate" and self.path not in simulation_paths:
             return self._json(404, {"error": "Not found."})
@@ -344,6 +344,8 @@ class Handler(BaseHTTPRequestHandler):
                     result = SIMULATIONS.create(user_id, APP.generate_personalized(case_id))
                 elif self.path == "/api/simulations/list":
                     result = {"simulations": SIMULATIONS.list_for_user(user_id, disease_name)}
+                elif self.path == "/api/simulations/insights":
+                    result = SIMULATIONS.insights_for_user(user_id, disease_name, APP.repo.get_disease)
                 else:
                     simulation_id = data.get("simulation_id")
                     if not isinstance(simulation_id, str) or len(simulation_id) != 32:
