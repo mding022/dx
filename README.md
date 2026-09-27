@@ -1,4 +1,4 @@
-# D
+# Dx
 
 **A simulated patient diagnosis platform for medical students.**
 
