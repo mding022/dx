@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./clinical-polish.css";
 
 export const metadata: Metadata = {
-  title: "Dx - Patient Diagnosis Simulations for Hack the Hill III",
-  description: "A platform for simulated patient symptoms. Our submission to Hack the Hill III.",
+  title: "Dx | Clinical Simulation for Medical Students",
+  description: "Practice patient conversations, make a diagnosis, and learn from every case with Dx.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

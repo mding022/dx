@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, CheckCircle2, Clock3, Stethoscope } from "lucide-react";
+import { ArrowRight, ArrowUpRight, CheckCircle2, ClipboardCheck, Clock3, MessageCircleMore, Stethoscope } from "lucide-react";
 import { redirect } from "next/navigation";
 import { auth0 } from "@/lib/auth0";
 import { getDiseases, listSimulations, type Disease, type Simulation } from "@/lib/backend";
@@ -27,17 +27,22 @@ export default async function Dashboard() {
   const accuracy = completed.length ? `${Math.round(correct / completed.length * 100)}%` : "—";
 
   return <AppShell name={name} email={session.user.email} active="dashboard">
-    <div className="page-header"><div><span className="section-overline">YOUR WORKSPACE</span><h1>Good to see you, {firstName}<span className="heading-period">.</span></h1><p>A quiet place to practice, reflect, and keep moving forward.</p></div><span className="header-date">{new Intl.DateTimeFormat("en", { weekday: "long", month: "long", day: "numeric" }).format(new Date())}</span></div>
+    <div className="page-header"><div><span className="section-overline">CLINICAL WORKSPACE</span><h1>Welcome back, {firstName}<span className="heading-period">.</span></h1><p>Continue your practice and review what you have learned.</p></div><span className="header-date">{new Intl.DateTimeFormat("en", { weekday: "long", month: "long", day: "numeric" }).format(new Date())}</span></div>
     {backendError ? <div className="notice" role="status">The case service is offline. Start the Python backend to load your simulations.</div> : null}
 
     <section className="hero-card">
-      <div className="hero-copy"><h2>Work through a<br />patient case.</h2><p>Interview the patient, make your diagnosis, and review the evidence behind your decision.</p><StartSimulationButton /></div>
-      <div className="hero-art" aria-hidden="true"><span className="art-orbit art-orbit-one" /><span className="art-orbit art-orbit-two" /><span className="art-main"><Stethoscope size={90} strokeWidth={1.1} /></span><span className="art-dot art-dot-one" /><span className="art-dot art-dot-two" /></div>
+      <div className="hero-copy"><span className="section-overline">NEW ENCOUNTER</span><h2>Start a patient<br />simulation.</h2><p>Interview a patient, make your diagnosis, and review the evidence behind your decision.</p><StartSimulationButton /></div>
+      <div className="encounter-preview" aria-hidden="true">
+        <div className="encounter-preview-head"><span>THE SIMULATION</span><span>01 / 03</span></div>
+        <div className="encounter-preview-row current"><span className="encounter-preview-number">01</span><div><strong>Patient interview</strong><small>Listen and ask questions</small></div><MessageCircleMore size={18} strokeWidth={1.7} /></div>
+        <div className="encounter-preview-row"><span className="encounter-preview-number">02</span><div><strong>Your diagnosis</strong><small>Consider the clinical clues</small></div><Stethoscope size={18} strokeWidth={1.7} /></div>
+        <div className="encounter-preview-row"><span className="encounter-preview-number">03</span><div><strong>Case review</strong><small>Learn from your decision</small></div><ClipboardCheck size={18} strokeWidth={1.7} /></div>
+      </div>
     </section>
 
     <div className="stats-grid">
-      <div className="stat-card"><span className="stat-icon lime"><Stethoscope size={20} /></span><span className="stat-label">Total cases</span><strong>{simulations.length.toString().padStart(2, "0")}</strong><small>Your practice journey</small></div>
-      <div className="stat-card"><span className="stat-icon cream"><CheckCircle2 size={20} /></span><span className="stat-label">Completed</span><strong>{completed.length.toString().padStart(2, "0")}</strong><small>Assessments submitted</small></div>
+      <div className="stat-card"><span className="stat-icon lime"><Stethoscope size={20} /></span><span className="stat-label">Cases started</span><strong>{simulations.length.toString().padStart(2, "0")}</strong><small>Across all simulations</small></div>
+      <div className="stat-card"><span className="stat-icon cream"><CheckCircle2 size={20} /></span><span className="stat-label">Cases completed</span><strong>{completed.length.toString().padStart(2, "0")}</strong><small>Assessments submitted</small></div>
       <div className="stat-card"><span className="stat-icon mint"><Clock3 size={20} /></span><span className="stat-label">Diagnostic accuracy</span><strong>{accuracy}</strong><small>Across completed cases</small></div>
     </div>
 
