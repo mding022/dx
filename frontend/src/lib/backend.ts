@@ -63,6 +63,29 @@ export type GeneratedCase = {
   };
 };
 
+export type LearningInsights = {
+  unlocked: boolean;
+  completed_cases: number;
+  required_cases: number;
+  correct_cases?: number;
+  incorrect_cases?: number;
+  top_confusions?: Array<{
+    actual_diagnosis: string;
+    actual_diagnosis_id: number;
+    chosen_diagnosis: string;
+    chosen_diagnosis_id: number;
+    count: number;
+    example_simulation_id: string;
+    clues: string[];
+  }>;
+  clues_to_revisit?: Array<{
+    symptom_id: number;
+    name: string;
+    count: number;
+    associated_diseases: string[];
+  }>;
+};
+
 export type ConversationPatient = Omit<GeneratedCase["patient"], "symptoms"> & {
   symptoms: Array<Omit<GeneratedCase["patient"]["symptoms"][number], "association_rank">>;
 };
@@ -99,6 +122,10 @@ export async function getDiseases(): Promise<Disease[]> {
 export async function listSimulations(userId: string): Promise<Simulation[]> {
   const data = await backendPost<{ simulations: Simulation[] }>("/api/simulations/list", { user_id: userId });
   return data.simulations;
+}
+
+export async function getLearningInsights(userId: string): Promise<LearningInsights> {
+  return backendPost<LearningInsights>("/api/simulations/insights", { user_id: userId });
 }
 
 export async function getSimulation(userId: string, id: string): Promise<Simulation> {
