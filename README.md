@@ -1,5 +1,7 @@
 # Dx
 
+[[Devpost Link](https://devpost.com/software/dx-patient-diagnosis-platform)]
+
 **A simulated patient diagnosis platform for medical students.**
 
 Dx gives students a place to practice patient conversations, make a diagnosis, and learn from the clues they gathered. Each case pairs a fictional patient with structured disease and symptom data, then turns the encounter into a practical review of clinical reasoning.
