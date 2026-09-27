@@ -63,8 +63,22 @@ class PatientPersona(BaseModel):
 
 
 PERSONA_NAMES = {
-    "she/her": ("Maya Chen", "Leila Haddad", "Sofia Alvarez", "Nina Patel", "Amara Okafor", "Elena Rossi", "Priya Shah", "Grace Kim"),
-    "he/him": ("Daniel Park", "Mateo Rivera", "Omar Hassan", "Noah Bennett", "Ethan Brooks", "Samuel Okoro", "Leo Martin", "Arjun Mehta"),
+    "she/her": (
+        "Maya Chen", "Leila Haddad", "Sofia Alvarez", "Nina Patel", "Amara Okafor",
+        "Elena Rossi", "Priya Shah", "Grace Kim", "Isabel Moreno", "Zara Ahmed",
+        "Aisha Rahman", "Camila Torres", "Hannah Lee", "Fatima Ali", "Chloe Martin",
+        "Yuna Park", "Olivia Bennett", "Dalia Mansour", "Jasmine Nguyen", "Anika Bose",
+        "Ruby Thompson", "Talia Brooks", "Mei Lin", "Nadia Ibrahim", "Rosa Delgado",
+        "Ada Mensah", "Mariam Saleh", "Lucia Romano",
+    ),
+    "he/him": (
+        "Daniel Park", "Mateo Rivera", "Omar Hassan", "Noah Bennett", "Ethan Brooks",
+        "Samuel Okoro", "Leo Martin", "Arjun Mehta", "Adam Chen", "Isaac Moreno",
+        "Karim Haddad", "Luis Torres", "Ben Carter", "Ravi Shah", "Alex Nguyen",
+        "Jamal Williams", "David Kim", "Marco Rossi", "Yusuf Ali", "Oliver Grant",
+        "Elias Rahman", "Theo Johnson", "Andre Mensah", "Hugo Silva", "Amir Patel",
+        "Julian Flores", "Kai Nakamura", "Nathan Brooks",
+    ),
 }
 PERSONA_HOBBIES = ("gardening", "cooking", "reading", "painting", "playing board games", "watching films", "photography", "listening to music")
 

@@ -22,7 +22,7 @@ export default async function Home() {
             </Link>
             <div className={styles.navActions}>
               <a className={styles.navDescriptor} href="#how-it-works">How it works</a>
-              <a className={styles.login} href={destination}>{session ? "Dashboard" : "Log in"}<ArrowUpRight size={16} strokeWidth={1.8} /></a>
+              <a className={styles.login} href={destination}><span className={styles.loginText}>{session ? "Dashboard" : "Log in"}</span><span className={styles.loginIcon}><ArrowUpRight size={16} strokeWidth={1.8} /></span></a>
             </div>
           </nav>
 
@@ -35,8 +35,8 @@ export default async function Home() {
               </h1>
               <p className={styles.description}>Practice with realistic AI patients, work through the clues, and see how your clinical reasoning could improve.</p>
               <div className={styles.ctaRow}>
-                <a className={styles.primaryCta} href={destination}>{session ? "Open dashboard" : "Try a simulation"}<ArrowUpRight size={19} strokeWidth={1.8} /></a>
-                <span className={styles.ctaNote}>{session ? "Continue your clinical practice" : "Create a free account to begin"}</span>
+                <a className={styles.primaryCta} href={destination}><span className={styles.ctaText}>{session ? "Open dashboard" : "Try a simulation"}</span><span className={styles.ctaArrow}><ArrowUpRight size={19} strokeWidth={1.8} /></span></a>
+                <span className={styles.ctaNote}>{session ? "Continue your clinical practice" : <><LockKeyhole size={13} strokeWidth={1.7} /> Account data secured by Auth0</>}</span>
               </div>
               <div className={styles.steps} aria-label="How dx works">
                 <span><b>01</b> Meet a patient</span><i aria-hidden="true" /><span><b>02</b> Make a diagnosis</span><i aria-hidden="true" /><span><b>03</b> Learn from the case</span>

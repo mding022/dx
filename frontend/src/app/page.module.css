@@ -12,8 +12,13 @@
 .navActions{display:flex;align-items:center;gap:clamp(20px,4vw,58px)}
 .navDescriptor{font-size:12px;color:#829284;font-weight:620;transition:color .2s}
 .navDescriptor:hover{color:#355b43}
-.login{display:inline-flex;align-items:center;gap:8px;color:#2f5543;font-weight:720;font-size:13px;transition:color .2s,transform .2s}
-.login:hover{color:#719e58;transform:translateX(2px)}
+.login{position:relative;isolation:isolate;display:inline-flex;align-items:center;gap:13px;min-height:43px;padding:5px 5px 5px 17px;overflow:hidden;border:1px solid #d8e6d7;border-radius:999px;background:#fffefa;color:#2f5543;box-shadow:0 5px 15px #315f4210;font-weight:720;font-size:12px;transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease}
+.login::before{content:"";position:absolute;z-index:0;inset:0;background:#e8f2e5;transform:translateX(-101%);transition:transform .48s cubic-bezier(.2,.8,.2,1)}
+.loginText,.loginIcon{position:relative;z-index:1}
+.loginIcon{display:grid;place-items:center;width:31px;height:31px;border-radius:50%;background:#e9f2e7;color:#416b4f;transition:background .3s,color .3s,transform .3s}
+.login:hover,.login:focus-visible{transform:translateY(-2px);border-color:#b9d4b7;box-shadow:0 9px 22px #315f421c}
+.login:hover::before,.login:focus-visible::before{transform:translateX(0)}
+.login:hover .loginIcon,.login:focus-visible .loginIcon{background:#355d45;color:#fff;transform:rotate(9deg)}
 
 .content{min-height:max(670px,calc(100svh - 155px));display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,.92fr);align-items:center;gap:clamp(20px,3vw,50px)}
 .hero{position:relative;z-index:2;padding:38px 0 45px}
@@ -25,9 +30,16 @@
 .title em,.sectionIntro em,.processHeading em{color:#7e9c6a;font-family:Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.07em}
 .description{max-width:465px;margin:0;color:#728477;font-size:clamp(15px,1.23vw,17px);line-height:1.7;animation:enter .7s 1.42s both}
 .ctaRow{display:flex;align-items:center;gap:22px;margin-top:32px;animation:enter .7s 1.55s both}
-.primaryCta{display:inline-flex;align-items:center;justify-content:space-between;gap:27px;min-height:54px;padding:0 21px 0 23px;border-radius:12px;background:#2e5845;color:#fff;font-size:13px;font-weight:730;white-space:nowrap;box-shadow:0 11px 25px #2d5d4322;transition:transform .2s,background .2s,box-shadow .2s}
-.primaryCta:hover{transform:translateY(-3px);background:#417155;box-shadow:0 16px 30px #2d5d4332}
-.ctaNote{max-width:130px;color:#a0ada1;font-size:11px;line-height:1.4}
+.primaryCta{position:relative;isolation:isolate;display:inline-flex;align-items:center;justify-content:space-between;gap:23px;min-height:56px;padding:6px 7px 6px 21px;overflow:hidden;border:1px solid #315a45;border-radius:13px;background:#2e5845;color:#fff;font-size:13px;font-weight:730;white-space:nowrap;box-shadow:0 11px 25px #2d5d4322;transition:transform .32s ease,box-shadow .32s ease}
+.primaryCta::before{content:"";position:absolute;z-index:0;inset:0;background:linear-gradient(105deg,#3e7752,#5e9368);transform:translateX(-101%);transition:transform .54s cubic-bezier(.2,.8,.2,1)}
+.ctaText,.ctaArrow{position:relative;z-index:1}
+.ctaArrow{display:grid;place-items:center;width:41px;height:41px;flex:none;border:1px solid #ffffff40;border-radius:9px;background:#ffffff17;transition:background .3s,border-color .3s}
+.primaryCta:hover,.primaryCta:focus-visible{transform:translateY(-3px);box-shadow:0 16px 30px #2d5d4332}
+.primaryCta:hover::before,.primaryCta:focus-visible::before{transform:translateX(0)}
+.primaryCta:hover .ctaArrow,.primaryCta:focus-visible .ctaArrow{background:#ffffff2d;border-color:#ffffff69}
+.primaryCta:hover .ctaArrow svg,.primaryCta:focus-visible .ctaArrow svg{animation:arrowOutIn .55s cubic-bezier(.2,.8,.2,1)}
+.ctaNote{display:inline-flex;align-items:center;gap:6px;max-width:154px;color:#839587;font-size:10px;line-height:1.45}
+.ctaNote svg{flex:none;color:#719477}
 .steps{display:flex;align-items:center;gap:15px;margin-top:clamp(40px,7vh,75px);color:#8a9b8c;font-size:10px;font-weight:650;white-space:nowrap}
 .steps>span,.steps>i{animation:enter .6s both}
 .steps>span:nth-child(1){animation-delay:1.69s}.steps>i:nth-child(2){animation-delay:1.77s}.steps>span:nth-child(3){animation-delay:1.84s}.steps>i:nth-child(4){animation-delay:1.91s}.steps>span:nth-child(5){animation-delay:1.98s}
@@ -53,6 +65,7 @@
 @keyframes expandFrame{from{clip-path:inset(0 47% 98% 47% round 44px);transform:translateY(-10px)}to{clip-path:inset(0 0 0 0 round 28px);transform:translateY(0)}}
 @keyframes ambientDriftOne{from{transform:translate(-35px,-20px) scale(.94)}to{transform:translate(55px,65px) scale(1.12)}}
 @keyframes ambientDriftTwo{from{transform:translate(30px,30px) scale(1.08)}to{transform:translate(-45px,-45px) scale(.93)}}
+@keyframes arrowOutIn{0%{opacity:1;transform:translate(0,0)}40%{opacity:0;transform:translate(8px,-8px)}41%{opacity:0;transform:translate(-8px,8px)}100%{opacity:1;transform:translate(0,0)}}
 @keyframes enter{from{opacity:0;transform:translateY(17px)}to{opacity:1;transform:translateY(0)}}@keyframes enterVisual{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}@keyframes patientMorph{from{opacity:0;filter:blur(7px);transform:translateY(10px) scale(.97)}to{opacity:1;filter:blur(0);transform:translateY(0) scale(1)}}@keyframes wave{50%{transform:scaleY(.45)}}@keyframes floatQuestion{50%{transform:translateY(-9px) rotate(-4deg)}}@keyframes floatFeedback{50%{transform:translateY(8px) rotate(3deg)}}@keyframes scrollNudge{50%{transform:translateY(4px)}}
 @media(max-width:1150px){.content{grid-template-columns:minmax(0,1fr) minmax(310px,.84fr)}.title{font-size:clamp(49px,5vw,69px)}.visual{height:535px}.patientCard{width:min(320px,78%);height:425px}.patientPortrait{height:211px}.portrait{width:205px;height:213px}.feedbackCard{right:-8px}.steps{gap:9px;font-size:9px}.footerTop{flex-wrap:wrap;gap:12px 20px}.sourceCredit{order:3;justify-content:flex-start;width:100%}.authentication{margin-left:auto}}
 @media(max-width:800px){.inner{padding:0 35px}.content{min-height:0;display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:68px 0 25px}.hero{padding:0}.title{font-size:clamp(50px,7vw,66px)}.steps{margin-top:32px}.visual{height:450px;width:min(100%,560px);margin:0 auto}.scrollPrompt{margin-bottom:40px}.problemSection{padding:75px 0 85px;gap:25px}.problemCards{gap:10px}.problemCard{padding:20px;min-height:250px}.processSection{gap:30px}}
@@ -61,4 +74,6 @@
 @media(prefers-reduced-motion:reduce){.frame,.nav,.title>span,.description,.ctaRow,.steps>span,.steps>i,.visual,.scrollPrompt,.audioWave i,.questionCard,.feedbackCard,.patientIdentity,.scrollPrompt svg{animation:none!important}.frame{clip-path:none;transform:none}:global(html.js-reveal) .reveal{opacity:1;transform:none;transition:none}}
 
 @media(max-width:640px){.frame::before{top:80px;right:-330px;width:580px;height:580px}.frame::after{top:900px;left:-320px;width:600px;height:600px}}
+@media(max-width:640px){.ctaRow{flex-wrap:wrap;gap:12px}.ctaNote{width:100%;max-width:none}}
 @media(prefers-reduced-motion:reduce){.frame::before,.frame::after{animation:none}}
+@media(prefers-reduced-motion:reduce){.login,.login::before,.loginIcon,.primaryCta,.primaryCta::before,.ctaArrow{transition:none!important}.login:hover,.primaryCta:hover{transform:none}.primaryCta:hover .ctaArrow svg,.primaryCta:focus-visible .ctaArrow svg{animation:none}}

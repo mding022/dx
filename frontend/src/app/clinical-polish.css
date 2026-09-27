@@ -24,10 +24,10 @@
 .button-dark{background:#315d46}
 .button-dark:hover:not(:disabled){background:#254e39}
 
-.dashboard-content .hero-card{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,365px);gap:36px;min-height:290px;padding:35px 42px;border-color:#dce8d7;border-radius:20px;background:linear-gradient(112deg,#edf5e9 0%,#f3f8ef 54%,#e6f1e3 100%)}
+.dashboard-content .hero-card{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,365px);gap:36px;min-height:290px;padding:35px 42px;border-color:#dfe8dc;border-radius:18px;background:linear-gradient(112deg,#f3f7f0 0%,#f6f9f3 54%,#edf5eb 100%)}
 .dashboard-content .hero-copy h2{margin:12px 0 12px;font-size:clamp(30px,2.8vw,40px);line-height:1.14}
 .dashboard-content .hero-copy p{max-width:420px;margin-bottom:24px;color:#6d836f;font-size:13px}
-.encounter-preview{position:relative;z-index:1;padding:18px 21px;border:1px solid #dfe9dd;border-radius:15px;background:#fffdfaf2;box-shadow:0 18px 34px #46674a12}
+.encounter-preview{position:relative;z-index:1;padding:18px 21px;border:1px solid #e0e9dd;border-radius:14px;background:#fffefa;box-shadow:0 10px 25px #46674a0b}
 .encounter-preview-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:11px;color:#88a08a;font-size:9px;font-weight:820;letter-spacing:.16em}
 .encounter-preview-row{display:flex;align-items:center;gap:12px;min-height:57px;border-top:1px solid #edf1eb;color:#7b9680}
 .encounter-preview-row.current{color:#3f7451}
@@ -37,13 +37,10 @@
 .encounter-preview-row strong{color:#4b6652;font-size:11px;font-weight:750}
 .encounter-preview-row small{color:#99a89a;font-size:9px}
 .dashboard-content .stats-grid{gap:14px;margin-bottom:21px}
-.dashboard-content .stat-card{position:relative;min-height:152px;padding:22px 24px;border-radius:15px;box-shadow:0 8px 24px #304f3508}
-.dashboard-content .stat-card::before{content:"";position:absolute;left:24px;right:24px;top:0;height:2px;background:#dbeacb}
-.dashboard-content .stat-card:nth-child(2)::before{background:#eee5cb}
-.dashboard-content .stat-card:nth-child(3)::before{background:#d4e9df}
+.dashboard-content .stat-card{min-height:152px;padding:22px 24px;border-color:#e4ebe3;border-radius:14px;box-shadow:none}
 .stat-label{color:#788d7d}
 .dashboard-content .stat-card strong{color:#2e4f3a;font-size:35px}
-.dashboard-content .panel{border-radius:16px;box-shadow:0 8px 24px #304f3508}
+.dashboard-content .panel{border-color:#e4ebe3;border-radius:15px;box-shadow:none}
 .dashboard-content .panel-heading{padding-bottom:16px;margin-bottom:0;border-bottom:1px solid #edf1eb}
 .dashboard-content .panel-heading h2{font-size:18px}
 .recent-row{padding:16px 3px}
@@ -56,30 +53,32 @@
 .simulation-content .steps{padding:15px 0 18px;margin-bottom:20px;border-bottom:1px solid #e5ebe3}
 .simulation-content .step.current span{background:#3d6b4d;border-color:#3d6b4d}
 .simulation-content .call-status{border-color:#d5e5d0;border-radius:16px;background:#f3f8ef;box-shadow:none}
-.simulation-content .evaluation-grid{grid-template-columns:minmax(265px,.78fr) minmax(0,1.38fr);gap:19px}
+.simulation-content .evaluation-grid{grid-template-columns:minmax(265px,.78fr) minmax(0,1.38fr);grid-template-areas:"patient assessment" "patient details";gap:19px;align-items:start}
 .simulation-content .patient-card,.simulation-content .panel{border-radius:16px;box-shadow:0 9px 27px #304f3509}
-.simulation-content .patient-card{border-color:#e1e9df}
+.simulation-content .patient-card{grid-area:patient;align-self:start;border-color:#e1e9df}
 .simulation-content .patient-card-top{padding:25px 24px 18px}
 .simulation-content .patient-card-top h2{font-size:24px;font-weight:670}
 .simulation-content .id-chip{background:#edf4e9;color:#5f8666}
 .simulation-content .portrait-panel{height:252px;background:linear-gradient(150deg,#eaf3e6,#dbeacb)}
 .simulation-content .patient-facts{padding:13px 24px 21px}
 .simulation-content .patient-facts>div{padding:13px 0}
-.simulation-content .assessment-column{gap:18px}
 .simulation-content .profile-details,.simulation-content .assessment-panel{padding:27px 30px}
+.simulation-content .profile-details{grid-area:details}
 .simulation-content .profile-details .panel-heading{margin-bottom:15px}
 .simulation-content .patient-background{padding-bottom:20px;margin-bottom:0;border-bottom:1px solid #e9eee7;color:#667c6b}
 .simulation-content .detail-grid{border-top:0}
 .simulation-content .detail-item{padding:15px 0}
-.simulation-content .assessment-panel{border-color:#d3e5cc;border-top:3px solid #86af7c;background:#fffefb}
+.simulation-content .assessment-panel{grid-area:assessment;border-color:#d9e5d5;background:#fffefa}
 .simulation-content .assessment-panel h2{font-size:25px;font-weight:660}
 .simulation-content .assessment-intro{color:#829586}
+.assessment-patient-summary{display:none}
 .simulation-content .review-panel{padding:32px 35px;border-radius:18px}
 .simulation-content .review-diagnosis-row{border-radius:13px;background:#f6faf4}
 .simulation-content .review-evidence{border-radius:13px}
 .simulation-content .review-note{border-radius:12px}
 
 @media(max-width:1100px){.dashboard-content .hero-card{grid-template-columns:minmax(0,1fr) minmax(260px,330px);gap:20px}.simulation-content .evaluation-grid{grid-template-columns:minmax(245px,.85fr) minmax(0,1.15fr)}}
-@media(max-width:850px){.app-shell{grid-template-columns:1fr}.sidebar{padding:12px 20px}.sidebar-brand{padding:0;margin-right:auto}.mobile-brand{display:none}.topbar-context{margin-left:4px}.dashboard-content .hero-card{grid-template-columns:1fr minmax(250px,320px)}.simulation-content .evaluation-grid{grid-template-columns:1fr}.simulation-content .patient-card{display:grid;grid-template-columns:minmax(220px,.9fr) 1fr}.simulation-content .patient-card-top{grid-column:1/-1}}
+@media(max-width:850px){.app-shell{grid-template-columns:1fr}.sidebar{padding:12px 20px}.sidebar-brand{padding:0;margin-right:auto}.mobile-brand{display:none}.topbar-context{margin-left:4px}.dashboard-content .hero-card{grid-template-columns:1fr minmax(250px,320px)}.simulation-content .evaluation-grid{grid-template-columns:1fr;grid-template-areas:"assessment" "patient" "details"}.simulation-content .patient-card{display:grid;grid-template-columns:minmax(220px,.9fr) 1fr}.simulation-content .patient-card-top{grid-column:1/-1}.assessment-patient-summary{display:flex;align-items:center;gap:9px;padding-bottom:17px;margin-bottom:19px;border-bottom:1px solid #e7eee5}.assessment-patient-summary span{color:#84a088;font-size:9px;font-weight:800;letter-spacing:.14em}.assessment-patient-summary strong{color:#41644b;font-size:12px}.assessment-patient-summary small{margin-left:auto;color:#91a292;font-size:10px}}
 @media(max-width:600px){.topbar-context{font-size:10px}.dashboard-content .hero-card{display:block;padding:29px 25px}.dashboard-content .hero-copy h2{font-size:31px}.encounter-preview{margin-top:29px}.dashboard-content .stat-card{min-height:138px;padding:18px}.dashboard-content .stat-card strong{font-size:31px}.dashboard-content .panel-heading{align-items:start}.simulation-content .patient-card{display:block}.simulation-content .profile-details,.simulation-content .assessment-panel{padding:23px}.simulation-content .review-panel{padding:22px}.simulation-content .review-diagnosis-row{grid-template-columns:1fr;gap:10px}.simulation-content .review-diagnosis-row>svg{justify-self:start;margin-left:18px;transform:rotate(90deg)}.simulation-content .review-actual{border-left:0;border-top:1px solid #dfe9dc;padding:15px 0 0}.simulation-content .review-diagnosis-art{width:56px;height:43px}}
 @media(max-width:380px){.sidebar-nav .nav-item{font-size:0;gap:0;padding:10px}}
+@media(max-width:600px){.assessment-patient-summary{flex-wrap:wrap}.assessment-patient-summary small{width:100%;margin-left:0}}
