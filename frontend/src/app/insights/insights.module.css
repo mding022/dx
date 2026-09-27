@@ -1,8 +1,8 @@
 .locked{max-width:690px;margin:42px auto 0;padding:53px clamp(25px,6vw,64px);border:1px solid #e1eadf;border-radius:20px;background:linear-gradient(145deg,#f4f8f1,#fffefa 66%);box-shadow:0 16px 40px #315f3c0a}
 .lockIcon,.panelIcon{display:grid;place-items:center;color:#4b7955;background:#e8f2e3}
 .lockIcon{width:52px;height:52px;border-radius:15px;margin-bottom:27px}
-.eyebrow,.summaryLabel{color:#719477;font-size:10px;font-weight:820;letter-spacing:.16em}
-.locked h2{margin:11px 0 10px;color:#2e4937;font-size:clamp(25px,3vw,33px);font-weight:660;letter-spacing:-.045em}
+.eyebrow,.summaryLabel{color:#6e8773;font-size:10px;font-weight:710;letter-spacing:.095em}
+.locked h2{margin:11px 0 10px;color:#2e4937;font-size:clamp(25px,3vw,32px);font-weight:630;letter-spacing:-.03em}
 .locked p{max-width:490px;margin:0;color:#708375;font-size:14px;line-height:1.7}
 .progressLabel{display:flex;justify-content:space-between;gap:12px;margin:34px 0 10px;color:#879789;font-size:12px}
 .progressLabel strong{color:#3d6045}
@@ -13,13 +13,13 @@
 .summaryGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:20px}
 .summaryCard,.panel{border:1px solid #e3ebe2;border-radius:15px;background:#fffefa;box-shadow:0 8px 25px #34573d08}
 .summaryCard{min-height:140px;padding:22px 24px;display:flex;flex-direction:column;align-items:flex-start}
-.summaryCard strong{margin:9px 0 3px;color:#2e513b;font-size:35px;font-weight:680;line-height:1;letter-spacing:-.06em}
+.summaryCard strong{margin:9px 0 3px;color:#2e513b;font-size:34px;font-weight:640;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.04em}
 .summaryCard small{margin-top:auto;color:#8b9d8e;font-size:11px}
 .sectionGrid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(290px,.85fr);gap:20px;align-items:start}
 .panel{padding:26px}
 .panelHeading{display:flex;align-items:center;gap:12px}
 .panelIcon{flex:none;width:43px;height:43px;border-radius:12px}
-.panelHeading h2{margin:5px 0 0;color:#304b39;font-size:20px;font-weight:660;letter-spacing:-.035em}
+.panelHeading h2{margin:5px 0 0;color:#304b39;font-size:19px;font-weight:630;letter-spacing:-.02em}
 .panelIntro{margin:16px 0 20px;color:#829385;font-size:12px;line-height:1.65}
 .confusionList,.clueList{display:grid;gap:10px}
 .confusionCard{padding:17px;border:1px solid #e6ece3;border-radius:12px;background:#fcfdfa}
@@ -28,7 +28,7 @@
 .diagnosisArt{width:50px;height:40px;flex:none}
 .condition span{display:grid;gap:4px;min-width:0}
 .condition small{color:#92a393;font-size:9px;font-weight:760;letter-spacing:.1em}
-.condition strong{color:#355440;font-size:12px;font-weight:700;line-height:1.35;overflow-wrap:anywhere}
+.condition strong{color:#355440;font-size:12px;font-weight:640;line-height:1.4;overflow-wrap:anywhere}
 .conditionArrow{color:#9ab09c}
 .confusionFoot{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-top:16px;padding-top:12px;border-top:1px solid #e8eee6}
 .confusionFoot span{color:#87998a;font-size:11px;line-height:1.5}
@@ -37,7 +37,7 @@
 .clueRow{display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-top:1px solid #edf1eb}
 .clueCount{display:grid;place-items:center;flex:none;min-width:32px;height:28px;padding:0 6px;border-radius:8px;background:#eaf3e6;color:#4c7d55;font-size:11px;font-weight:760}
 .clueText{display:grid;gap:4px;min-width:0}
-.clueText strong{color:#365541;font-size:12px;font-weight:710;overflow-wrap:anywhere}
+.clueText strong{color:#365541;font-size:12px;font-weight:640;overflow-wrap:anywhere}
 .clueText small{color:#92a194;font-size:11px;line-height:1.45;overflow-wrap:anywhere}
 .emptyState{display:grid;justify-items:start;gap:9px;padding:23px;border:1px dashed #dce9d9;border-radius:12px;background:#f7faf5;color:#60866a}
 .emptyState strong{color:#365541;font-size:13px}

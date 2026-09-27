@@ -24,7 +24,7 @@ export default async function EvaluationPage({ params }: PageProps<"/simulations
   catch (error) {
     if (error instanceof BackendError && error.status === 404) notFound();
     console.error("Evaluation unavailable", error);
-    return <AppShell name={session.user.name ?? session.user.email ?? "Student"} email={session.user.email} active="simulation"><div className="page-header"><h1>Case unavailable<span className="heading-period">.</span></h1><p>Check that the Python backend is running, then try again.</p></div><Link className="button button-dark" href="/dashboard">Back to dashboard</Link></AppShell>;
+    return <AppShell name={session.user.name ?? session.user.email ?? "Student"} email={session.user.email} active="simulation"><div className="page-header"><h1>Case unavailable</h1><p>Check that the Python backend is running, then try again.</p></div><Link className="button button-dark" href="/dashboard">Back to dashboard</Link></AppShell>;
   }
   const patient = simulation.patient;
   const completed = simulation.status === "completed";
@@ -47,7 +47,7 @@ export default async function EvaluationPage({ params }: PageProps<"/simulations
 
   return <AppShell name={session.user.name ?? session.user.email ?? "Student"} email={session.user.email} active="simulation">
     <Link href="/dashboard" className="back-link"><ArrowLeft size={16} /> Back to dashboard</Link>
-    <div className="evaluation-header"><div><span className="section-overline">CASE {simulation.id.slice(0, 8).toUpperCase()}</span><h1>Diagnose this Patient</h1><p>Interview {patient.name.split(" ")[0]}, review their chart, then submit your diagnosis.</p></div><span className="status-pill pending">Awaiting diagnosis</span></div>
+    <div className="evaluation-header"><div><span className="section-overline">CASE {simulation.id.slice(0, 8).toUpperCase()}</span><h1>Diagnose this patient</h1><p>Interview {patient.name.split(" ")[0]}, review their chart, then submit your diagnosis.</p></div><span className="status-pill pending">Awaiting diagnosis</span></div>
     <div className="steps"><div className="step done"><span><BadgeCheck size={16} /></span> Case prepared</div><div className="step-line" /><div className="step current"><span>2</span> Interview &amp; evaluation</div><div className="step-line" /><div className="step"><span>3</span> Review</div></div>
     <PatientConversationWidget key={simulation.id} agentId={agentId} patientName={patient.name} patient={conversationPatient} />
     <div className="evaluation-grid">

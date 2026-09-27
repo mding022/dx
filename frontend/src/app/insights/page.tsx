@@ -26,8 +26,8 @@ export default async function InsightsPage() {
   return <AppShell name={session.user.name ?? session.user.email ?? "Student"} email={session.user.email} active="insights">
     <div className="page-header">
       <div>
-        <span className="section-overline">YOUR LEARNING</span>
-        <h1>Learning insights<span className="heading-period">.</span></h1>
+        <span className="section-overline">PROGRESS REVIEW</span>
+        <h1>Learning insights</h1>
         <p>See patterns in your completed cases and choose what to review next.</p>
       </div>
     </div>
@@ -37,7 +37,7 @@ export default async function InsightsPage() {
     {insights && !insights.unlocked ? <section className={styles.locked}>
       <div className={styles.lockIcon}><LockKeyhole size={25} strokeWidth={1.7} /></div>
       <span className={styles.eyebrow}>PERSONALIZED REVIEW</span>
-      <h2>Build your case history first.</h2>
+      <h2>Build your case history first</h2>
       <p>Complete five patient assessments to unlock a review of your diagnosis patterns and the clues worth revisiting.</p>
       <div className={styles.progressLabel}><strong>{completed} of {required} completed</strong><span>{Math.max(required - completed, 0)} to go</span></div>
       <div className={styles.progressTrack} role="progressbar" aria-label="Cases completed toward insights" aria-valuemin={0} aria-valuemax={required} aria-valuenow={completed}>
@@ -68,7 +68,7 @@ export default async function InsightsPage() {
         </section>
 
         <section className={styles.panel}>
-          <div className={styles.panelHeading}><span className={styles.panelIcon}><BookOpenText size={19} /></span><div><span className={styles.eyebrow}>CLUES TO REVISIT</span><h2>Symptoms that may distinguish cases</h2></div></div>
+          <div className={styles.panelHeading}><span className={styles.panelIcon}><BookOpenText size={19} /></span><div><span className={styles.eyebrow}>REVIEW</span><h2>Symptom patterns</h2></div></div>
           <p className={styles.panelIntro}>In your missed cases, these patient symptoms were linked to the case diagnosis but not to the condition you chose in the source dataset.</p>
           {clues.length ? <div className={styles.clueList}>{clues.map(clue => <div className={styles.clueRow} key={clue.symptom_id}>
             <span className={styles.clueCount}>{clue.count}×</span>

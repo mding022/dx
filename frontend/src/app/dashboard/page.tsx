@@ -27,11 +27,11 @@ export default async function Dashboard() {
   const accuracy = completed.length ? `${Math.round(correct / completed.length * 100)}%` : "—";
 
   return <AppShell name={name} email={session.user.email} active="dashboard">
-    <div className="page-header"><div><span className="section-overline">CLINICAL WORKSPACE</span><h1>Welcome back, {firstName}<span className="heading-period">.</span></h1><p>Continue your practice and review what you have learned.</p></div><span className="header-date">{new Intl.DateTimeFormat("en", { weekday: "long", month: "long", day: "numeric" }).format(new Date())}</span></div>
+    <div className="page-header"><div><span className="section-overline">CLINICAL WORKSPACE</span><h1>Welcome back, {firstName}</h1><p>Continue your practice and review what you have learned.</p></div><span className="header-date">{new Intl.DateTimeFormat("en", { weekday: "long", month: "long", day: "numeric" }).format(new Date())}</span></div>
     {backendError ? <div className="notice" role="status">The case service is offline. Start the Python backend to load your simulations.</div> : null}
 
     <section className="hero-card">
-      <div className="hero-copy"><span className="section-overline">NEW ENCOUNTER</span><h2>Start a patient<br />simulation.</h2><p>Interview a patient, make your diagnosis, and review the evidence behind your decision.</p><StartSimulationButton /></div>
+      <div className="hero-copy"><span className="section-overline">NEW ENCOUNTER</span><h2>Start a patient<br />simulation</h2><p>Interview a patient, make your diagnosis, and review the evidence behind your decision.</p><StartSimulationButton /></div>
       <div className="encounter-preview" aria-hidden="true">
         <div className="encounter-preview-head"><span>THE SIMULATION</span><span>01 / 03</span></div>
         <div className="encounter-preview-row current"><span className="encounter-preview-number">01</span><div><strong>Patient interview</strong><small>Listen and ask questions</small></div><MessageCircleMore size={18} strokeWidth={1.7} /></div>

@@ -82,3 +82,35 @@
 @media(max-width:600px){.topbar-context{font-size:10px}.dashboard-content .hero-card{display:block;padding:29px 25px}.dashboard-content .hero-copy h2{font-size:31px}.encounter-preview{margin-top:29px}.dashboard-content .stat-card{min-height:138px;padding:18px}.dashboard-content .stat-card strong{font-size:31px}.dashboard-content .panel-heading{align-items:start}.simulation-content .patient-card{display:block}.simulation-content .profile-details,.simulation-content .assessment-panel{padding:23px}.simulation-content .review-panel{padding:22px}.simulation-content .review-diagnosis-row{grid-template-columns:1fr;gap:10px}.simulation-content .review-diagnosis-row>svg{justify-self:start;margin-left:18px;transform:rotate(90deg)}.simulation-content .review-actual{border-left:0;border-top:1px solid #dfe9dc;padding:15px 0 0}.simulation-content .review-diagnosis-art{width:56px;height:43px}}
 @media(max-width:380px){.sidebar-nav .nav-item{font-size:0;gap:0;padding:10px}}
 @media(max-width:600px){.assessment-patient-summary{flex-wrap:wrap}.assessment-patient-summary small{width:100%;margin-left:0}}
+
+/* Consistent type hierarchy across authenticated pages. */
+.app-shell{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;color:#273d30}
+.app-shell .nav-item{font-size:13px;font-weight:560;letter-spacing:0}
+.app-shell .nav-item.active{font-weight:670}
+.app-shell .sidebar-section-label,.app-shell .section-overline,.app-shell .card-eyebrow,.app-shell .review-kicker{font-size:10px;font-weight:710;letter-spacing:.095em;color:#6e8773}
+.app-shell .topbar-context{font-size:12px;font-weight:620;letter-spacing:0}
+.app-shell .topbar-context span{font-size:10px;font-weight:700;letter-spacing:.095em}
+.app-shell .page-header h1,.app-shell .evaluation-header h1{font-size:clamp(30px,2.8vw,39px);font-weight:630;line-height:1.18;letter-spacing:-.035em;color:#263d2f}
+.app-shell .page-header p,.app-shell .evaluation-header p{font-size:14px;line-height:1.65;color:#687c6d}
+.app-shell .header-date{font-size:12px;color:#77897b}
+.app-shell .button{font-size:13px;font-weight:640;letter-spacing:0}
+.app-shell .text-link{font-size:12px;font-weight:630}
+.dashboard-content .hero-copy h2{font-size:clamp(29px,2.7vw,37px);font-weight:630;line-height:1.2;letter-spacing:-.038em;color:#284333}
+.dashboard-content .hero-copy p{font-size:13px;line-height:1.7;color:#657b69}
+.app-shell .panel-heading h2{font-size:19px;font-weight:630;letter-spacing:-.022em;color:#2c4535}
+.app-shell .stat-label{font-size:11px;font-weight:640;color:#708473}
+.app-shell .stat-card strong{font-weight:640;font-variant-numeric:tabular-nums;letter-spacing:-.045em}
+.app-shell .stat-card small{font-size:11px;color:#7d8e80}
+.app-shell .recent-info strong,.app-shell .history-main strong{font-size:13px;font-weight:640;color:#314b39}
+.app-shell .recent-info small,.app-shell .history-main small{color:#7b8e7f}
+.app-shell .status-pill{font-size:10px;font-weight:680;letter-spacing:0}
+.app-shell .patient-card-top h2,.app-shell .assessment-panel h2{font-weight:630;letter-spacing:-.025em;color:#2b4334}
+.app-shell .patient-background,.app-shell .detail-item p{color:#586e5f}
+.app-shell .detail-item small,.app-shell .review-diagnosis-row span{font-weight:710;letter-spacing:.09em;color:#7a927e}
+.app-shell .review-heading h2{font-size:clamp(25px,2.3vw,30px);font-weight:630;letter-spacing:-.035em;color:#294132}
+.app-shell .review-heading p,.app-shell .review-evidence-head p{color:#738778}
+.app-shell .review-evidence h3{font-size:15px;font-weight:650;letter-spacing:-.012em;color:#314a39}
+.app-shell .review-symptom strong,.app-shell .review-note strong{font-weight:640;color:#304939}
+.app-shell .review-diagnosis-row strong{font-weight:650;letter-spacing:-.015em}
+.app-shell .review-success-copy strong{font-weight:650;letter-spacing:-.025em}
+@media(max-width:600px){.app-shell .page-header h1,.app-shell .evaluation-header h1{font-size:31px}.dashboard-content .hero-copy h2{font-size:30px}}
