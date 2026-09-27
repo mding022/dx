@@ -1,7 +1,7 @@
 import { auth0 } from "@/lib/auth0";
 import { LandingPatientPreview } from "./LandingPatientPreview";
 import { ScrollReveal } from "./ScrollReveal";
-import { ArrowDown, ArrowUpRight, AudioLines, BookOpenText, Check, ClipboardCheck, LockKeyhole, MessageCircleMore, MessagesSquare, SearchCheck } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUpRight, AudioLines, BookOpenText, Check, ClipboardCheck, LockKeyhole, MessageCircleMore, MessagesSquare, SearchCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import styles from "./page.module.css";
@@ -21,7 +21,7 @@ export default async function Home() {
               <span className={styles.brandName}>dx</span>
             </Link>
             <div className={styles.navActions}>
-              <a className={styles.navDescriptor} href="#how-it-works">How it works</a>
+              <a className={styles.navDescriptor} href="#why-dx">Why Dx</a><a className={styles.navDescriptor} href="#how-it-works">How it works</a>
               <a className={styles.login} href={destination}><span className={styles.loginText}>{session ? "Dashboard" : "Log in"}</span><span className={styles.loginIcon}><ArrowUpRight size={16} strokeWidth={1.8} /></span></a>
             </div>
           </nav>
@@ -33,10 +33,10 @@ export default async function Home() {
                 <span><em>human side</em> of</span>
                 <span>medical diagnosis.</span>
               </h1>
-              <p className={styles.description}>Practice with realistic AI patients, work through the clues, and see how your clinical reasoning could improve.</p>
+              <p className={styles.description}>Better questions. Clearer thinking. More confident care. Build your clinical reasoning through conversations with realistic AI patients.</p>
               <div className={styles.ctaRow}>
                 <a className={styles.primaryCta} href={destination}><span className={styles.ctaText}>{session ? "Open dashboard" : "Try a simulation"}</span><span className={styles.ctaArrow}><ArrowUpRight size={19} strokeWidth={1.8} /></span></a>
-                <span className={styles.ctaNote}>{session ? "Continue your clinical practice" : <><LockKeyhole size={13} strokeWidth={1.7} /> Account data secured by Auth0</>}</span>
+                <span className={styles.ctaNote}>{session ? "Continue your clinical practice" : <><LockKeyhole size={13} strokeWidth={1.7} /> Your own space to practice</>}</span>
               </div>
               <div className={styles.steps} aria-label="How dx works">
                 <span><b>01</b> Meet a patient</span><i aria-hidden="true" /><span><b>02</b> Make a diagnosis</span><i aria-hidden="true" /><span><b>03</b> Learn from the case</span>
@@ -44,11 +44,12 @@ export default async function Home() {
             </section>
 
             <div className={styles.visual} aria-hidden="true">
+              <span className={styles.visualLabel}>A GLIMPSE OF YOUR NEXT ENCOUNTER</span>
               <div className={styles.visualGlow} />
               <div className={styles.visualRingOne} />
               <div className={styles.visualRingTwo} />
               <div className={styles.patientCard}>
-                <div className={styles.cardTop}><span><span className={styles.liveDot} /> PATIENT ENCOUNTER</span><span>DX / 01</span></div>
+                <div className={styles.cardTop}><span><span className={styles.liveDot} /> PATIENT ENCOUNTER</span><span>SIMULATED PATIENT</span></div>
                 <LandingPatientPreview />
                 <div className={styles.audioBar}><span className={styles.audioIcon}><AudioLines size={18} strokeWidth={1.9} /></span><div><strong>Patient is speaking</strong><small>A real conversation starts here</small></div><span className={styles.audioWave}><i /><i /><i /><i /><i /></span></div>
               </div>
@@ -57,7 +58,8 @@ export default async function Home() {
             </div>
           </div>
 
-          <a href="#why-dx" className={styles.scrollPrompt}>Explore dx <ArrowDown size={15} /></a>
+          <div className={styles.benefitStrip}><span><AudioLines size={17} />Conversations that feel human</span><span><SearchCheck size={17} />Space to think it through</span><span><BookOpenText size={17} />Something to learn, every time</span></div>
+          <a href="#why-dx" className={styles.scrollPrompt}>A closer look <ArrowDown size={14} /></a>
 
           <section id="why-dx" className={styles.problemSection} aria-labelledby="problem-title">
             <div className={`${styles.sectionIntro} ${styles.reveal}`} data-reveal>
@@ -84,6 +86,8 @@ export default async function Home() {
               <div className={`${styles.processItem} ${styles.reveal}`} data-reveal><span className={styles.processNumber}>03</span><div><h3>Understand the case</h3><p>Review the evidence and take a clearer thought process into your next encounter.</p></div><BookOpenText size={24} strokeWidth={1.55} /></div>
             </div>
           </section>
+
+          <section className={`${styles.closingCta} ${styles.reveal}`} data-reveal aria-labelledby="closing-title"><div><span className={styles.sectionLabel}>YOUR NEXT CHAPTER</span><h2 id="closing-title">Confidence comes<br />from <em>conversation.</em></h2><p>Your next patient has a story. Start listening.</p></div><a className={styles.primaryCta} href={destination}><span className={styles.ctaText}>{session ? "Continue your practice" : "Meet your first patient"}</span><span className={styles.ctaArrow}><ArrowRight size={18} /></span></a></section>
 
           <footer className={styles.footer}>
             <div className={styles.footerTop}>

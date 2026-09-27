@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import "./clinical-polish.css";
 
 export const metadata: Metadata = {
   title: "Dx | Clinical Simulation for Medical Students",

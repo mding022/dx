@@ -27,9 +27,11 @@ export function LandingPatientPreview() {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const timer = window.setInterval(() => {
+      if (document.hidden) return;
       setIndex(current => (current + 1) % patients.length);
-    }, 4200);
+    }, 8000);
     return () => window.clearInterval(timer);
   }, []);
 
